@@ -7,6 +7,14 @@ function pick(obj = {}, keys = []) {
 }
 
 function manejarError(res, err) {
+  // PostgreSQL: 23503 = foreign_key_violation, 23001 = restrict_violation
+  const pgCode = err.parent?.code || err.original?.code;
+  if (pgCode === '23503' || pgCode === '23001') {
+    return res.status(409).json({
+      error: 'No se puede completar: existen registros relacionados (ej. la rutina tiene sesiones)'
+    });
+  }
+
   switch (err.name) {
     case 'SequelizeValidationError':
       return res.status(400).json({ error: err.errors.map(e => e.message) });

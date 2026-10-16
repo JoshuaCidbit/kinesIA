@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # Pruebas de rutas.  Uso:
-#   BASE_URL=https://kinesia-api.onrender.com SERVERLESS_URL=https://kinesia-serverless.vercel.app FOTO=./foto.jpg bash tests/smoke.sh
-BASE_URL="${BASE_URL:-http://localhost:3000}"
-SERVERLESS_URL="${SERVERLESS_URL:-}"
-FOTO="${FOTO:-}"
+# BASE_URL="${BASE_URL:-http://localhost:3000}"
+BASE_URL="https://kinesia-api-gfbna7fab0gxdjc7.mexicocentral-01.azurewebsites.net"
+# SERVERLESS_URL="${SERVERLESS_URL:-}"
+SERVERLESS_URL="https://kinesia-func-bnb5fweeatc4awds.mexicocentral-01.azurewebsites.net"
+# FOTO="${FOTO:-}"
+FOTO="./LOShamster.jpeg" 
+# bash tests/smoke.sh
 
 call() {
   local method=$1 path=$2 body=$3 args=()
