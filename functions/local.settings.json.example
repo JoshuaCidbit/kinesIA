@@ -1,0 +1,9 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "DATABASE_URL": "postgresql://adminkinesia:TU_PASSWORD@TU-SERVIDOR.postgres.database.azure.com:5432/postgres",
+    "DB_SSL": "true"
+  }
+}
