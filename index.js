@@ -31,6 +31,21 @@ const SesionTerapia = sequelize.define('SesionTerapia', {
   observaciones: { type: DataTypes.TEXT }
 });
 
+// Nuevo modelo para resultados de AG
+const AgResultado = sequelize.define('AgResultado', {
+  usuarioId: { type: DataTypes.INTEGER, allowNull: false },
+  objetivo: { type: DataTypes.STRING, allowNull: false }, // 'cut' o 'bulk'
+  caloriasObjetivoDiarias: { type: DataTypes.FLOAT },
+  fitnessFinal: { type: DataTypes.FLOAT },
+  generaciones: { type: DataTypes.INTEGER },
+  cumplioRestricciones: { type: DataTypes.BOOLEAN },
+  distribucionJson: { type: DataTypes.JSON } // distribución de calorías por comida
+});
+
+// Relación: un usuario tiene muchos resultados de AG
+Usuario.hasMany(AgResultado, { foreignKey: 'usuarioId' });
+AgResultado.belongsTo(Usuario, { foreignKey: 'usuarioId' });
+
 // Definición de Relaciones (Relaciones 1:N)
 Usuario.hasMany(SesionTerapia, { foreignKey: 'usuarioId' });
 SesionTerapia.belongsTo(Usuario, { foreignKey: 'usuarioId' });
@@ -146,6 +161,58 @@ app.get('/api/sesiones/:usuarioId', async (req, res) => {
       include: [Usuario, Rutina]
     });
     res.json(sesiones);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 11. POST /api/ag/calorico - Optimizar distribución de calorías con Algoritmo Genético
+app.post('/api/ag/calorico', async (req, res) => {
+  try {
+    const { peso, objetivo, alimentos } = req.body;
+
+    if (!peso || !objetivo || !alimentos || !Array.isArray(alimentos)) {
+      return res.status(400).json({ error: 'Faltan parámetros: peso, objetivo (cut/bulk), y alimentos' });
+    }
+
+    if (!['cut', 'bulk'].includes(objetivo)) {
+      return res.status(400).json({ error: 'Objetivo debe ser "cut" o "bulk"' });
+    }
+
+    // Importar el algoritmo genético (archivo JS en kinesia-AG)
+    // El archivo usa module.exports = CaloricoAG, por lo tanto el require devuelve la clase directamente
+    const CaloricoAG = require('./kinesia-AG/prueba1');
+
+    // Instanciar y ejecutar AG
+    const ag = new CaloricoAG(alimentos, {
+      peso: peso,
+      objetivo: objetivo,
+      poblacion: 60,
+      generaciones: 200,
+      probCrossover: 0.9,
+      probMutacion: 0.2,
+      elitismo: 4,
+      tolerancia: 25
+    });
+
+    const resultado = ag.ejecutar();
+
+    // Guardar resultado en base de datos
+    const agResultado = await AgResultado.create({
+      usuarioId: req.usuario ? req.usuario.id : null,
+      objetivo: objetivo,
+      caloriasObjetivoDiarias: resultado.caloriasObjetivo,
+      fitnessFinal: resultado.fitness,
+      generaciones: resultado.generaciones,
+      cumplioRestricciones: resultado.cumpleRestricciones,
+      distribucionJson: resultado.mejorDistribucion
+    });
+
+    res.json({
+      ...resultado,
+      idResultado: agResultado.id,
+      mensaje: 'Algoritmo genético completado y resultado guardado'
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
