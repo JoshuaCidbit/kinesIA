@@ -1,0 +1,11 @@
+{
+  "name": "kinesia-functions",
+  "version": "1.0.0",
+  "description": "KinesIA - Azure Functions (serverless)",
+  "main": "src/functions/*.js",
+  "scripts": { "start": "func start" },
+  "dependencies": {
+    "@azure/functions": "^4.5.0",
+    "pg": "^8.12.0"
+  }
+}

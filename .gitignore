@@ -1,0 +1,19 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+package-lock.json
+
+# Environment variables (con credenciales)
+.env
+functions/local.settings.json
+functions/local.settings.json.example
+
+# OS generated files
+.DS_Store
+*.sqlite
+
+# Build outputs (opcionales)
+# kinesia-api-azure.zip  # Solo si se sube el paquete desplegado
+
+# Temp files
+*.log

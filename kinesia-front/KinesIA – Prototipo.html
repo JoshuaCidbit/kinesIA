@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KinesIA – Prototipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F9F9F9;--surface:#fff;--line:#E1E1E1;--primary:#945B34;--on-primary:#fff;--sage:#5C6F5E;--ochre:#C67B38;--err:#B5473A;--text:#1A1A1A;--muted:#5E5E5E;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1A1A1A;--surface:#242424;--line:#383838;--primary:#D08A5C;--on-primary:#1A1A1A;--sage:#8FAE92;--ochre:#D9964F;--err:#E07B6C;--text:#F2F2F2;--muted:#A8A8A8;color-scheme:dark}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+.side{background:var(--surface);border-right:1px solid var(--line);padding:24px 16px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px}
+.brand{font-weight:700;font-size:22px;letter-spacing:-.02em;padding:0 10px 20px;display:flex;align-items:center;gap:10px}
+.brand i{width:28px;height:28px;border-radius:50%;background:conic-gradient(var(--primary) 0 50%,var(--sage) 0 75%,var(--ochre) 0);display:block}
+.nav{display:flex;align-items:center;gap:12px;padding:11px 12px;border:0;background:none;border-radius:10px;text-align:left;color:var(--muted);font-weight:500;min-height:44px}
+.nav:hover{background:var(--bg)}
+.nav.on{background:var(--primary);color:var(--on-primary)}
+.nav svg{width:20px;height:20px;flex:none}
+.foot{margin-top:auto;padding:12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
+main{padding:32px clamp(16px,4vw,48px) 64px;max-width:1120px;width:100%}
+h1{font-size:30px;letter-spacing:-.02em;margin:0 0 4px;line-height:1.15}
+h2{font-size:17px;margin:0 0 14px}
+.sub{color:var(--muted);margin:0 0 28px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:3fr 2fr;gap:16px}
+.kpi{border-left:4px solid var(--c,var(--primary))}
+.kpi b{display:block;font-size:36px;letter-spacing:-.03em;line-height:1.1}
+.kpi span{color:var(--muted);font-size:14px}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border:0;padding-bottom:0}
+.row .grow{flex:1;min-width:0}
+.row small,.muted{color:var(--muted)}
+.av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:600;color:#fff;flex:none;background:var(--c)}
+.av.lg{width:80px;height:80px;font-size:28px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:600;background:color-mix(in srgb,var(--c) 15%,transparent)}
+.badge::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 16px;font-weight:600;min-height:44px}
+.btn.pri{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.btn.dng{color:var(--err);border-color:var(--err)}
+.bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+input[type=search]{flex:1;min-width:200px;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;min-height:44px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.pcard{text-align:left;display:flex;flex-direction:column;gap:12px;width:100%}
+.pcard:hover{border-color:var(--primary)}
+.hero{display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.hero .grow{flex:1;min-width:220px}
+.back{background:none;border:0;color:var(--primary);font-weight:600;padding:0 0 16px;min-height:44px}
+.scroll{overflow-x:auto}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:16px;z-index:20}
+.modal .card{max-width:420px;width:100%}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--text);color:var(--bg);padding:12px 18px;border-radius:12px;max-width:min(92vw,460px);z-index:30;font-weight:500}
+@media (max-width:820px){
+ .app{grid-template-columns:1fr}
+ .side{position:static;height:auto;flex-direction:row;overflow-x:auto;padding:12px;border-right:0;border-bottom:1px solid var(--line)}
+ .brand,.foot{display:none}
+ .nav{white-space:nowrap}
+ .grid3,.grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useEffect}=React;
+const P=[
+{id:1,nombre:"Mariana López",edad:34,email:"mariana@correo.mx",c:"#945B34",rutina:"Flexión de rodilla",ses:[[72,10],[75,12],[79,12],[78,14],[84,15],[88,15],[90,16]]},
+{id:2,nombre:"Carlos Hernández",edad:58,email:"carlos.h@correo.mx",c:"#5C6F5E",rutina:"Rotación de hombro",ses:[[60,8],[64,8],[63,10],[69,10],[72,12]]},
+{id:3,nombre:"Sofía Ramírez",edad:27,email:"sofia.r@correo.mx",c:"#B5473A",rutina:"Extensión de codo",ses:[[85,12],[88,12],[91,14],[93,14]]},
+{id:4,nombre:"Jorge Villanueva",edad:45,email:"jorge.v@correo.mx",c:"#8A6A1E",rutina:"Elevación lateral",ses:[[55,6],[58,8],[66,8]]},
+{id:5,nombre:"Elena Cruz",edad:62,email:"elena.c@correo.mx",c:"#4A5A7A",rutina:"Flexión de rodilla",ses:[[78,10],[80,10],[82,12],[86,12]]}];
+const R=[
+{id:1,nombre:"Flexión de rodilla",desc:"Flexión activa asistida en camilla, 3 series.",ang:90,n:12},
+{id:2,nombre:"Rotación de hombro",desc:"Rotación externa con banda elástica.",ang:60,n:7},
+{id:3,nombre:"Extensión de codo",desc:"Extensión completa contra gravedad.",ang:150,n:9},
+{id:4,nombre:"Elevación lateral",desc:"Abducción de hombro sin carga.",ang:120,n:0}];
+const avg=a=>Math.round(a.reduce((s,x)=>s+x,0)/a.length);
+const last=p=>p.ses[p.ses.length-1];
+const lvl=v=>v>=85?["var(--sage)","Buena"]:v>=70?["var(--ochre)","Regular"]:["var(--err)","Baja"];
+const Badge=({v})=>{const [c,t]=lvl(v);return <span className="badge" style={{"--c":c}}>{v}% · {t}</span>};
+const ini=n=>n.split(" ").map(x=>x[0]).join("");
+const IC={d:"M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z",u:"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8",r:"M6.5 6.5l11 11M21 21l-1-1M3 3l1 1M18 22l4-4M2 6l4-4M3 10l7-7M14 21l7-7"};
+const Ico=({k})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={IC[k]}/></svg>;
+
+function Gauge({ang,size=120}){
+ const a=ang*Math.PI/180,x=60-48*Math.cos(a),y=60-48*Math.sin(a);
+ return <svg width={size} viewBox="0 0 120 72" role="img" aria-label={"Ángulo objetivo "+ang+" grados"}>
+  <path d="M12 60A48 48 0 0 1 108 60" fill="none" stroke="var(--line)" strokeWidth="9" strokeLinecap="round"/>
+  <path d={`M12 60A48 48 0 0 1 ${x} ${y}`} fill="none" stroke="var(--ochre)" strokeWidth="9" strokeLinecap="round"/>
+  <text x="60" y="58" textAnchor="middle" fontSize="22" fontWeight="700" fill="var(--text)">{ang}°</text></svg>;
+}
+
+function Chart({ses}){
+ const W=560,H=210,pl=36,pr=12,pt=12,pb=26,n=ses.length;
+ const X=i=>pl+(n===1?0:i*(W-pl-pr)/(n-1)),Y=v=>pt+(100-v)*(H-pt-pb)/50*1-(0)*0;
+ const yy=v=>pt+(100-v)/50*(H-pt-pb);
+ const pts=ses.map((s,i)=>[X(i),yy(s[0])]);
+ return <div className="scroll"><svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",minWidth:420}} role="img" aria-label="Precisión por sesión">
+  {[50,70,85,100].map(v=><g key={v}><line x1={pl} x2={W-pr} y1={yy(v)} y2={yy(v)} stroke="var(--line)" strokeDasharray={v===70||v===85?"4 4":"0"}/><text x={pl-8} y={yy(v)+4} textAnchor="end" fontSize="11" fill="var(--muted)">{v}</text></g>)}
+  <polyline points={pts.map(p=>p.join(",")).join(" ")} fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinejoin="round"/>
+  {pts.map((p,i)=><g key={i}><circle cx={p[0]} cy={p[1]} r="6" fill={lvl(ses[i][0])[0]} stroke="var(--surface)" strokeWidth="2"/><text x={p[0]} y={H-6} textAnchor="middle" fontSize="11" fill="var(--muted)">S{i+1}</text></g>)}
+ </svg></div>;
+}
+
+function Dashboard({go}){
+ const all=P.flatMap(p=>p.ses.map(s=>s[0]));
+ const rec=P.map(p=>({p,s:last(p)})).sort((a,b)=>b.s[0]-a.s[0]);
+ const tot=P.reduce((s,p)=>s+p.ses.length,0);
+ return <>
+  <h1>Buen día, Dra. Ramírez</h1><p className="sub">Resumen de pacientes y sesiones de esta semana.</p>
+  <div className="grid3">
+   <div className="card kpi" style={{"--c":"var(--primary)"}}><b>{P.length}</b><span>Pacientes activos</span></div>
+   <div className="card kpi" style={{"--c":"var(--ochre)"}}><b>{tot}</b><span>Sesiones registradas</span></div>
+   <div className="card kpi" style={{"--c":"var(--sage)"}}><b>{avg(all)}%</b><span>Precisión media</span></div>
+  </div>
+  <div className="grid2">
+   <div className="card"><h2>Precisión de Mariana López</h2><Chart ses={P[0].ses}/>
+    <div className="legend"><span><i style={{background:"var(--sage)"}}/>Buena (85+)</span><span><i style={{background:"var(--ochre)"}}/>Regular (70–84)</span><span><i style={{background:"var(--err)"}}/>Baja</span></div></div>
+   <div className="card"><h2>Última sesión por paciente</h2>
+    {rec.map(({p,s})=><button key={p.id} className="row" style={{width:"100%",background:"none",border:0,borderBottom:"1px solid var(--line)",textAlign:"left"}} onClick={()=>go("paciente-"+p.id)}>
+     <span className="av" style={{"--c":p.c}}>{ini(p.nombre)}</span>
+     <span className="grow"><b>{p.nombre}</b><br/><small>{s[1]} repeticiones</small></span><Badge v={s[0]}/></button>)}
+   </div>
+  </div></>;
+}
+
+function Pacientes({go}){
+ const [q,setQ]=useState("");
+ const l=P.filter(p=>p.nombre.toLowerCase().includes(q.toLowerCase()));
+ return <>
+  <h1>Pacientes</h1><p className="sub">{P.length} pacientes registrados.</p>
+  <div className="bar"><input type="search" placeholder="Buscar por nombre" value={q} onChange={e=>setQ(e.target.value)} aria-label="Buscar paciente"/><button className="btn pri">Registrar paciente</button></div>
+  {l.length===0?<div className="card" style={{textAlign:"center",padding:40}}><b>No hay coincidencias</b><p className="muted">Prueba con otro nombre o registra un paciente nuevo.</p></div>:
+  <div className="cards">{l.map(p=><button key={p.id} className="card pcard" onClick={()=>go("paciente-"+p.id)}>
+   <div style={{display:"flex",gap:12,alignItems:"center"}}><span className="av" style={{"--c":p.c}}>{ini(p.nombre)}</span><span><b>{p.nombre}</b><br/><small className="muted">{p.edad} años</small></span></div>
+   <div className="muted" style={{fontSize:14}}>{p.rutina}</div>
+   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><small className="muted">{p.ses.length} sesiones</small><Badge v={last(p)[0]}/></div></button>)}</div>}
+ </>;
+}
+
+function Perfil({id,go,toast}){
+ const p=P.find(x=>x.id===id);const [del,setDel]=useState(false);
+ if(!p)return <p>Paciente no encontrado.</p>;
+ const m=avg(p.ses.map(s=>s[0]));const reps=p.ses.reduce((s,x)=>s+x[1],0);
+ return <>
+  <button className="back" onClick={()=>go("pacientes")}>← Volver a pacientes</button>
+  <div className="card hero">
+   <span className="av lg" style={{"--c":p.c}}>{ini(p.nombre)}</span>
+   <div className="grow"><h1>{p.nombre}</h1><div className="muted">{p.edad} años · {p.email}</div>
+    <div style={{display:"flex",gap:8,marginTop:14,flexWrap:"wrap"}}><button className="btn pri">Registrar sesión</button><button className="btn">Cambiar foto</button><button className="btn dng" onClick={()=>setDel(true)}>Eliminar paciente</button></div></div>
+   <div style={{textAlign:"center"}}><Gauge ang={m*1.8} size={150}/><div className="muted" style={{fontSize:14}}>Precisión media {m}%</div></div>
+  </div>
+  <div className="grid2">
+   <div className="card"><h2>Evolución de la precisión</h2><Chart ses={p.ses}/></div>
+   <div className="card"><h2>Sesiones</h2><p className="muted" style={{marginTop:-8}}>{p.ses.length} sesiones · {reps} repeticiones en total</p>
+    {[...p.ses].reverse().map((s,i)=><div className="row" key={i}><span className="grow"><b>Sesión {p.ses.length-i}</b><br/><small>{s[1]} repeticiones</small></span><Badge v={s[0]}/></div>)}</div>
+  </div>
+  {del&&<div className="modal" role="dialog" aria-modal="true"><div className="card"><h2>¿Eliminar a {p.nombre}?</h2>
+   <p className="muted">También se borrarán sus {p.ses.length} sesiones registradas. Esta acción no se puede deshacer.</p>
+   <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button className="btn" onClick={()=>setDel(false)}>Cancelar</button><button className="btn pri" style={{background:"var(--err)",borderColor:"var(--err)",color:"#fff"}} onClick={()=>{setDel(false);toast("Paciente eliminado (simulado en el prototipo)")}}>Eliminar paciente</button></div></div></div>}
+ </>;
+}
+
+function Rutinas({toast}){
+ return <>
+  <h1>Rutinas</h1><p className="sub">El arco muestra el ángulo objetivo de cada ejercicio.</p>
+  <div className="bar"><button className="btn pri">Crear rutina</button></div>
+  <div className="cards">{R.map(r=><div key={r.id} className="card" style={{display:"flex",flexDirection:"column",gap:10}}>
+   <div style={{display:"flex",justifyContent:"center",background:"var(--bg)",borderRadius:10,padding:"14px 0"}}><Gauge ang={r.ang}/></div>
+   <b>{r.nombre}</b><span className="muted" style={{fontSize:14}}>{r.desc}</span>
+   <small className="muted">{r.n>0?r.n+" sesiones asociadas":"Sin sesiones asociadas"}</small>
+   <div style={{display:"flex",gap:8,marginTop:"auto"}}><button className="btn" style={{flex:1}}>Editar</button>
+    <button className="btn dng" onClick={()=>toast(r.n>0?"No se puede eliminar: la rutina tiene "+r.n+" sesiones asociadas. Elimina o reasigna esas sesiones primero.":"Rutina eliminada (simulado en el prototipo)")}>Eliminar</button></div></div>)}</div>
+ </>;
+}
+
+function App(){
+ const get=()=>location.hash.slice(1)||"dashboard";
+ const [v,setV]=useState(get());const [t,setT]=useState("");
+ useEffect(()=>{const h=()=>setV(get());addEventListener("hashchange",h);return()=>removeEventListener("hashchange",h)},[]);
+ useEffect(()=>{if(t){const k=setTimeout(()=>setT(""),4000);return()=>clearTimeout(k)}},[t]);
+ const go=x=>{location.hash=x;scrollTo(0,0)};
+ const sec=v.startsWith("paciente-")?"pacientes":v;
+ const nav=[["dashboard","d","Resumen"],["pacientes","u","Pacientes"],["rutinas","r","Rutinas"]];
+ return <div className="app">
+  <nav className="side" aria-label="Principal"><div className="brand"><i/>KinesIA</div>
+   {nav.map(([k,i,l])=><button key={k} className={"nav"+(sec===k?" on":"")} aria-current={sec===k?"page":undefined} onClick={()=>go(k)}><Ico k={i}/>{l}</button>)}
+   <div className="foot">Dra. Ramírez<br/>Prototipo con datos de ejemplo</div></nav>
+  <main>
+   {v==="dashboard"&&<Dashboard go={go}/>}
+   {v==="pacientes"&&<Pacientes go={go}/>}
+   {v.startsWith("paciente-")&&<Perfil id={+v.split("-")[1]} go={go} toast={setT}/>}
+   {v==="rutinas"&&<Rutinas toast={setT}/>}
+  </main>
+  {t&&<div className="toast" role="status">{t}</div>}
+ </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
