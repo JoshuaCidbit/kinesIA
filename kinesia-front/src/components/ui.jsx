@@ -77,7 +77,7 @@ export const Leyenda = () => (
   </div>
 );
 
-export function Modal({ titulo, children, onClose }) {
+export function Modal({ titulo, children, onClose, className = '' }) {
   useEffect(() => {
     const h = (e) => e.key === 'Escape' && onClose();
     addEventListener('keydown', h);
@@ -85,7 +85,7 @@ export function Modal({ titulo, children, onClose }) {
   }, [onClose]);
   return (
     <div className="modal" role="dialog" aria-modal="true" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="card">
+      <div className={`card ${className}`.trim()}>
         <h2>{titulo}</h2>
         {children}
       </div>

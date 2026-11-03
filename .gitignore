@@ -17,3 +17,6 @@ functions/local.settings.json.example
 
 # Temp files
 *.log
+
+# Documentación local (no se versiona)
+mds/

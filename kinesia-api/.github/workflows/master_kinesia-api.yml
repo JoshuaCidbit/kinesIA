@@ -1,3 +1,9 @@
+# ⚠️ ARCHIVO LEGADO / NO ACTIVO
+# GitHub solo ejecuta workflows en .github/workflows de la RAÍZ del repositorio.
+# El workflow activo de la API es:
+#   .github/workflows/azure-webapps-kinesia-api.yml
+# Este archivo se conserva como referencia histórica.
+#
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 

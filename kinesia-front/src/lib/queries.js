@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { rutinas, sesiones, sistema, usuarios } from './api';
+import { ag, alimentos, rutinas, sesiones, sistema, usuarios } from './api';
 
 // Todos los ids se convierten a String para que 1 y "1" sean la misma key
 export const keys = {
@@ -9,6 +9,9 @@ export const keys = {
   sesiones: ['sesiones'],
   sesionesUsuario: (id) => ['sesiones', 'usuario', String(id)],
   stats: (id) => ['estadisticas', String(id)],
+  alimentos: ['alimentos'],
+  agUsuario: (id) => ['ag', 'usuario', String(id)],
+  agResultado: (id) => ['ag', 'resultado', String(id)],
 };
 
 // ---------- Pacientes ----------
@@ -129,3 +132,33 @@ export const useEstadisticas = (usuarioId) =>
 
 export const useHealth = () =>
   useQuery({ queryKey: ['health'], queryFn: sistema.health, refetchInterval: 60_000, retry: false });
+
+// ---------- Alimentos y plan calórico (AG) ----------
+export const useAlimentos = () =>
+  useQuery({
+    queryKey: keys.alimentos,
+    queryFn: () => alimentos.listar(),
+    staleTime: 5 * 60_000, // el catálogo cambia poco
+  });
+
+export const useHistorialAG = (usuarioId) =>
+  useQuery({
+    queryKey: keys.agUsuario(usuarioId),
+    queryFn: () => ag.porUsuario(usuarioId),
+    enabled: !!usuarioId,
+  });
+
+export const useResultadoAG = (id) =>
+  useQuery({
+    queryKey: keys.agResultado(id),
+    queryFn: () => ag.resultado(id),
+    enabled: !!id,
+  });
+
+export function useGenerarPlanCalorico(usuarioId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ag.generar,
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.agUsuario(usuarioId) }),
+  });
+}

@@ -7,9 +7,15 @@ function pick(obj = {}, keys = []) {
 }
 
 function manejarError(res, err) {
-  // PostgreSQL: 23503 = foreign_key_violation, 23001 = restrict_violation
+  // PostgreSQL: 23503 = foreign_key_violation, 23001 = restrict_violation.
+  // pg-mem (demo local) no expone el código, pero sí el mensaje: se detecta
+  // también por texto para que el 409 sea igual en local y en Azure.
   const pgCode = err.parent?.code || err.original?.code;
-  if (pgCode === '23503' || pgCode === '23001') {
+  const pgMensaje = String(err.parent?.message || err.original?.message || err.message || '');
+  if (
+    pgCode === '23503' || pgCode === '23001' ||
+    /violates foreign key constraint|foreign key constraint/i.test(pgMensaje)
+  ) {
     return res.status(409).json({
       error: 'No se puede completar: existen registros relacionados (ej. la rutina tiene sesiones)'
     });

@@ -46,6 +46,8 @@ app.get('/api/estadisticas/:usuarioId', async (req, res) => {
 app.use('/api/usuarios', require('./routes/usuario.routes'));
 app.use('/api/rutinas', require('./routes/rutina.routes'));
 app.use('/api/sesiones', require('./routes/sesion.routes'));
+app.use('/api/alimentos', require('./routes/alimento.routes'));
+app.use('/api/ag', require('./routes/ag.routes'));
 
 app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
 

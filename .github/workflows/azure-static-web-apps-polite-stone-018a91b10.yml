@@ -4,10 +4,17 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'kinesia-front/**'
+      - '.github/workflows/azure-static-web-apps-polite-stone-018a91b10.yml'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - master
+    paths:
+      - 'kinesia-front/**'
+      - '.github/workflows/azure-static-web-apps-polite-stone-018a91b10.yml'
+  workflow_dispatch:
 
 jobs:
   build_and_deploy_job:
@@ -15,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false

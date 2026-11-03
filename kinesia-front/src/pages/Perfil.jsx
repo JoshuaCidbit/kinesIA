@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Avatar, Badge, Chart, Gauge, Leyenda, Mensaje, Modal } from '../components/ui';
+import PlanCalorico from '../components/PlanCalorico';
 import {
   useCrearSesion, useEliminarUsuario,
   useEstadisticas,
@@ -63,7 +64,7 @@ export default function Perfil({ id, go, toast }) {
   const stats = useEstadisticas(id);
   const eliminar = useEliminarUsuario();
   const foto = useSubirFotoUsuario();
-  const [modal, setModal] = useState(null); // 'sesion' | 'eliminar'
+  const [modal, setModal] = useState(null); // 'sesion' | 'plan' | 'eliminar'
   const input = useRef(null);
 
   if (usuario.isLoading) return <Mensaje titulo="Cargando paciente..." />;
@@ -109,6 +110,7 @@ export default function Perfil({ id, go, toast }) {
           <div className="muted">{u.edad} años · {u.email}</div>
           <div className="btns">
             <button className="btn pri" onClick={() => setModal('sesion')}>Registrar sesión</button>
+            <button className="btn" onClick={() => setModal('plan')}>Plan calórico</button>
             <button className="btn" disabled={foto.isPending} onClick={() => input.current?.click()}>
               {foto.isPending ? 'Subiendo...' : 'Cambiar foto'}
             </button>
@@ -149,6 +151,9 @@ export default function Perfil({ id, go, toast }) {
 
       {modal === 'sesion' && (
         <NuevaSesion usuarioId={u.id} onClose={() => setModal(null)} onOk={() => { setModal(null); toast('Sesión registrada'); }} />
+      )}
+      {modal === 'plan' && (
+        <PlanCalorico usuario={u} onClose={() => setModal(null)} toast={toast} />
       )}
       {modal === 'eliminar' && (
         <Modal titulo={`¿Eliminar a ${u.nombre}?`} onClose={() => setModal(null)}>

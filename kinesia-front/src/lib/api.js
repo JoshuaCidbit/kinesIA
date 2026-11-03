@@ -89,3 +89,24 @@ export const sistema = {
   // Responde: { usuarioId, totalSesiones, promedioPrecision, ultimaSesion, rutinaMasUsada: {id, nombre, usos} }
   estadisticas: (usuarioId) => api(`/api/estadisticas/${usuarioId}`),
 };
+
+// Catálogo de alimentos (PostgreSQL). Filtros opcionales: { q, categoria }
+export const alimentos = {
+  listar: (filtros = {}) => {
+    const params = new URLSearchParams();
+    if (filtros.q) params.set("q", filtros.q);
+    if (filtros.categoria) params.set("categoria", filtros.categoria);
+    const qs = params.toString();
+    return api(`/api/alimentos${qs ? `?${qs}` : ""}`);
+  },
+};
+
+// Algoritmo genético calórico
+export const ag = {
+  // data: { usuarioId, peso, altura?, objetivo: 'cut'|'bulk', alimentoIds, opciones? }
+  generar: (data) => api("/api/ag/calorico", { method: "POST", body: data }),
+  // Historial resumido del paciente
+  porUsuario: (usuarioId) => api(`/api/ag/usuario/${usuarioId}`),
+  // Detalle completo de un resultado
+  resultado: (id) => api(`/api/ag/resultados/${id}`),
+};
