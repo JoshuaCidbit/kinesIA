@@ -12,7 +12,7 @@ router.get('/', c.listar);
 router.get('/', auth, c.listar);
 
 // POST /api/alimentos - coach y admin (con protección de usuarioId)
-router.post('/', auth, accesoPaciente(r => r.body.usuarioId), c.crear);
+router.post('/', auth, rol('admin', 'coach'), c.crear);
 
 // PUT /api/alimentos/:id - coach y admin
 router.put('/:id', auth, rol('coach', 'admin'), c.actualizar);

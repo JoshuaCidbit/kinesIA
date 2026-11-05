@@ -2,8 +2,7 @@ const { Usuario } = require('../models');
 const bcrypt = require('bcryptjs');
 const { pick, manejarError } = require('../utils/helpers');
 const { generarToken } = require('../middlewares/auth');
-// IMPORTANTE: agregar aquí el require de `eliminarArchivo`
-// (buscar con grep dónde está definida; la versión anterior lo usaba sin importarlo)
+const { eliminarArchivo } = require('../services/storage.service');
 
 const CAMPOS = ['nombre', 'email', 'edad'];
 const ROLES = ['paciente', 'coach', 'admin'];
@@ -23,6 +22,7 @@ exports.crear = async (req, res) => {
     const esAdmin = req.usuario.rol === 'admin';
     // Solo un admin puede crear coaches/admins; cualquier otro caso crea pacientes
     const rolNuevo = esAdmin && ROLES.includes(req.body.rol) ? req.body.rol : 'paciente';
+    // Nota: el registro público ignora rol del body; solo admins pueden fijar rol.
 
     let coachId = null;
     if (rolNuevo === 'paciente') {

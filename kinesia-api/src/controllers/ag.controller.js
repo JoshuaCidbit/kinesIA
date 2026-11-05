@@ -3,6 +3,7 @@ const CaloricoAG = require('../ag/caloricoAG');
 const { validarSolicitud, validarIdParam } = require('../ag/validacion');
 const { Usuario, AgResultado, Alimento } = require('../models');
 const { manejarError } = require('../utils/helpers');
+const { puedeVer } = require('../middlewares/auth');
 
 /** Misma forma para POST (201) y GET detalle (200). */
 function formatear(r) {
@@ -125,6 +126,9 @@ exports.obtener = async (req, res) => {
     if (!id) return res.status(400).json({ error: 'id inválido' });
     const fila = await AgResultado.findByPk(id);
     if (!fila) return res.status(404).json({ error: 'Resultado no encontrado' });
+    if (!(await puedeVer(req.usuario, fila.usuarioId))) {
+      return res.status(403).json({ error: 'No tienes permisos sobre este resultado' });
+    }
     return res.json(formatear(fila));
   } catch (err) {
     return manejarError(res, err);

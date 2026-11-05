@@ -61,7 +61,11 @@ const puedeVer = async (user, pacienteId) => {
 // Middleware: `leerId` recibe req y devuelve el id del paciente a verificar
 const accesoPaciente = (leerId) => async (req, res, next) => {
   try {
-    if (!(await puedeVer(req.usuario, leerId(req)))) {
+    const id = Number(leerId(req));
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ error: 'id inválido' });
+    }
+    if (!(await puedeVer(req.usuario, id))) {
       return res.status(403).json({ error: 'No tienes permisos sobre este paciente' });
     }
     next();
