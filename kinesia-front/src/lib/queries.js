@@ -53,7 +53,10 @@ export function useSubirFotoUsuario() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, archivo }) => usuarios.subirFoto(id, archivo),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.usuarios }),
+    onSuccess: (id) => {
+      qc.invalidateQueries({ queryKey: keys.usuarios });
+      qc.invalidateQueries({ queryKey: keys.usuario(id) });
+    },
   });
 }
 
