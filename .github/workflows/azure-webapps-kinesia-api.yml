@@ -2,6 +2,7 @@ name: Deploy KinesIA API to Azure App Service
 
 # GitHub solo ejecuta workflows que están en .github/workflows de la RAÍZ.
 # Este workflow reemplaza al archivo legado kinesia-api/.github/workflows/master_kinesia-api.yml.
+
 on:
   push:
     branches:
@@ -26,6 +27,25 @@ jobs:
       run:
         working-directory: kinesia-api
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: kinesia_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test -d kinesia_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: kinesia-api
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,7 +59,16 @@ jobs:
         run: npm install
 
       - name: Run AG and API tests
-        run: JWT_SECRET=test-secret npm test
+        env:
+          DATABASE_URL: postgres://test:test@postgres:5432/kinesia_test
+          DB_SYNC: 'true'
+          POSTGRES_DB: kinesia_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          USE_PG_MEM: 'false'
+          NODE_ENV: 'test'
+          JWT_SECRET: test-secret
+        run: npm test
 
       - name: Remove development dependencies
         run: npm prune --omit=dev
