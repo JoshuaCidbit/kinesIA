@@ -134,4 +134,68 @@ small,.muted{color:var(--muted)}
  .plan-comidas{grid-template-columns:1fr}
 }
 
+/* ---------- Login ---------- */
+.login-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 16px
+           calc(24px + env(safe-area-inset-bottom, 0px));
+  background: var(--bg);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 28px 24px;
+}
+
+.login-brand {
+  justify-content: center;
+  padding: 0 0 20px;
+}
+
+.login-card h1 {
+  text-align: center;
+}
+
+.login-card .sub {
+  text-align: center;
+  font-size: 14px;
+  margin: 0 0 24px;
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-card .field {
+  margin: 0;
+}
+
+.login-card .msg-err {
+  margin: 0;
+}
+
+.login-card .btn {
+  width: 100%;
+}
+
+.login-foot {
+  text-align: center;
+  font-size: 14px;
+  margin: 20px 0 0;
+}
+
+@media (max-width: 560px) {
+  .login-page { padding: 16px; }
+  .login-card { padding: 20px 16px; }
+}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
