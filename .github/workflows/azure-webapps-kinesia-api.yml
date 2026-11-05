@@ -23,6 +23,7 @@ jobs:
   build:
     name: Build, test and package API
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: kinesia-api
@@ -42,10 +43,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    defaults:
-      run:
-        working-directory: kinesia-api
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -60,11 +57,8 @@ jobs:
 
       - name: Run AG and API tests
         env:
-          DATABASE_URL: postgres://test:test@postgres:5432/kinesia_test
+          DATABASE_URL: postgres://test:test@localhost:5432/kinesia_test
           DB_SYNC: 'true'
-          POSTGRES_DB: kinesia_test
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
           USE_PG_MEM: 'false'
           NODE_ENV: 'test'
           JWT_SECRET: test-secret
