@@ -9,6 +9,9 @@ import Rutinas from './pages/Rutinas';
 import Login from './pages/Login';
 import MiPanel from './pages/MiPanel';
 
+// Función go derivada del rol (exportada para uso en páginas)
+export const go = (x) => { location.hash = x; scrollTo(0, 0); };
+
 const NAV_STAFF = [
   ['dashboard', 'd', 'Resumen'],
   ['pacientes', 'u', 'Pacientes'],
@@ -40,9 +43,7 @@ export default function App() {
   if (!usuario) return <Login />
 
   const esPaciente = usuario.rol === 'paciente';
-  const go = (x) => { location.hash = x; scrollTo(0, 0); };
-
-  let vista = esPaciente ? 'mi-panel' : hash;
+let vista = esPaciente ? 'mi-panel' : hash;
   if (!esPaciente && !VISTAS_STAFF.includes(vista) && !vista.startsWith('paciente-')) vista = 'dashboard';
   const seccion = vista.startsWith('paciente-') ? 'pacientes' : vista;
   const nav = esPaciente ? NAV_PACIENTE : NAV_STAFF;

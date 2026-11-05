@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { go } from './App';
+import { go } from '../App';
 
 export default function Perfil({ id, go, toast }) {
   const { usuario, login } = useAuth();
@@ -64,9 +64,7 @@ export default function Perfil({ id, go, toast }) {
         <div>
           <h3>Panel administrativo</h3>
           <p>Coach asignado: pending</p>
-          <button onClick={() => api(`/api/usuarios/${pacienteId}/coach`, { method: 'PUT', body: { coachId: null } }})>
-            Quitar coach
-          </button>
+          <button onClick={() => api(`/api/usuarios/${pacienteId}/coach`, { method: 'PUT', body: { coachId: null } })}>Quitar coach</button>
           <button>Restablecer contraseña</button>
         </div>
       )}

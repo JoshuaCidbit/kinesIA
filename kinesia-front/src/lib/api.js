@@ -55,7 +55,7 @@ async function request(base, path, { method = "GET", body, form, headers = {} } 
   return data;
 }
 
-const api = (path, o) => request(API, path, o);
+export const api = (path, o) => request(API, path, o);
 
 const fd = (campo, archivo) => {
   const f = new FormData();

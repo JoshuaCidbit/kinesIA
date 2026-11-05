@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { go } from './App';
+import { go } from '../App';
 
 export default function Dashboard({ go }) {
   const { usuario } = useAuth();
