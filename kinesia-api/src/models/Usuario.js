@@ -1,7 +1,9 @@
+const { urlArchivo } = require('../services/storage.service');
+
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-module.exports = sequelize.define('Usuario', {
+const Usuario = sequelize.define('Usuario', {
   nombre: { type: DataTypes.STRING, allowNull: false, validate: { notEmpty: { msg: 'El nombre es obligatorio' } } },
   email: {
     type: DataTypes.STRING, unique: true, allowNull: false,
@@ -23,3 +25,13 @@ module.exports = sequelize.define('Usuario', {
   defaultScope: { attributes: { exclude: ['password_hash'] } },
   scopes: { conPassword: {} }
 });
+
+// Definir toJSON en el prototipo para agregar firma a fotoUrl cuando hay fotoPath
+Usuario.prototype.toJSON = function () {
+  const v = { ...this.get() };
+  delete v.password_hash;
+  if (v.fotoPath) v.fotoUrl = urlArchivo(v.fotoPath);
+  return v;
+};
+
+module.exports = Usuario;
