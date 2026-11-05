@@ -1,12 +1,20 @@
 'use strict';
 const router = require('express').Router();
 const c = require('../controllers/ag.controller');
+const { auth, accesoPaciente } = require('../middlewares/auth');
 
-// OJO: `/resultados/:usuarioId` y `/resultados/:id` serían la MISMA ruta para
-// Express (el primero siempre gana). Por eso el historial por paciente va en
-// /usuario/:usuarioId, igual que /api/sesiones/usuario/:usuarioId.
-router.post('/calorico', c.generar);
-router.get('/usuario/:usuarioId', c.listarPorUsuario);
-router.get('/resultados/:id', c.obtener);
+// router.use(auth); // Ya está en el controller o se aplica por endpoint
+
+// GET /api/ag/calorico - abierto a cualquier autenticado (cálculo general)
+router.get('/calorico', auth, c.generar);
+
+// POST /api/ag/calorico - requiere usuarioId en el body, proteger con accesoPaciente
+router.post('/calorico', auth, accesoPaciente(r => r.body.usuarioId), c.generar);
+
+// GET /api/ag/usuario/:usuarioId - lectura protegida por paciente/coach/admin
+router.get('/usuario/:usuarioId', auth, accesoPaciente(r => r.params.usuarioId), c.listarPorUsuario);
+
+// GET /api/ag/resultados/:id - abierto a cualquier autenticado
+router.get('/resultados/:id', auth, c.obtener);
 
 module.exports = router;

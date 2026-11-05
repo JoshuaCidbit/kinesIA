@@ -9,6 +9,7 @@
     "start:local": "node scripts/start-local.js",
     "dev:local": "nodemon scripts/start-local.js",
     "seed:alimentos": "node scripts/seed-alimentos.js",
+    "crear-admin": "node scripts/crear-admin.js",
     "test:ag": "node --test tests/ag.test.js",
     "test": "node --test tests/*.test.js",
     "test:api": "node --test tests/api-ag.test.js",
@@ -19,13 +20,17 @@
   },
   "dependencies": {
     "@azure/storage-blob": "^12.25.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "pg": "^8.12.0",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.3"
+    "sequelize": "^6.37.3",
+    "sqlite3": "^6.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.4",

@@ -178,4 +178,5 @@ module.exports = {
   validarAlimentoIds,
   validarOpciones,
   validarIdParam,
+  esEntero,
 };

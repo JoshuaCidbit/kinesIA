@@ -17,4 +17,8 @@ SesionTerapia.belongsTo(Rutina, { foreignKey: { name: 'rutinaId', allowNull: fal
 Usuario.hasMany(AgResultado, { foreignKey: { name: 'usuarioId', allowNull: false }, onDelete: 'CASCADE' });
 AgResultado.belongsTo(Usuario, { foreignKey: { name: 'usuarioId', allowNull: false } });
 
+// Relaciones coach ↔ pacientes
+Usuario.hasMany(Usuario, { as: 'pacientes', foreignKey: 'coachId', onDelete: 'SET NULL' });
+Usuario.belongsTo(Usuario, { as: 'coach', foreignKey: 'coachId' });
+
 module.exports = { sequelize, Usuario, Rutina, SesionTerapia, AgResultado, Alimento };

@@ -1,27 +1,33 @@
 import { useEffect, useState } from 'react';
 import { Ico } from './components/ui';
 import { useHealth } from './lib/queries';
+import { useAuth } from './contexts/AuthContext';
 import Dashboard from './pages/Dashboard';
 import Pacientes from './pages/Pacientes';
 import Perfil from './pages/Perfil';
 import Rutinas from './pages/Rutinas';
+import Login from './pages/Login';
+import MiPanel from './pages/MiPanel';
 
-const NAV = [
+const NAV_STAFF = [
   ['dashboard', 'd', 'Resumen'],
   ['pacientes', 'u', 'Pacientes'],
   ['rutinas', 'r', 'Rutinas'],
 ];
-const leerHash = () => location.hash.slice(1) || 'dashboard';
+const NAV_PACIENTE = [['mi-panel', 'u', 'Mi panel']];
+const VISTAS_STAFF = ['dashboard', 'pacientes', 'rutinas'];
+const leerHash = () => location.hash.slice(1);
 
 export default function App() {
-  const [vista, setVista] = useState(leerHash);
+  const { usuario, cargando, logout } = useAuth();
+  const [hash, setHash] = useState(leerHash);
   const [aviso, setAviso] = useState('');
   const health = useHealth();
 
   useEffect(() => {
-    const h = () => setVista(leerHash());
-    addEventListener('hashchange', h);
-    return () => removeEventListener('hashchange', h);
+    const f = () => setHash(leerHash());
+    addEventListener('hashchange', f);
+    return () => removeEventListener('hashchange', f);
   }, []);
 
   useEffect(() => {
@@ -30,8 +36,17 @@ export default function App() {
     return () => clearTimeout(t);
   }, [aviso]);
 
+  if (cargando) return null;
+  if (!usuario) return <Login />
+
+  const esPaciente = usuario.rol === 'paciente';
   const go = (x) => { location.hash = x; scrollTo(0, 0); };
+
+  let vista = esPaciente ? 'mi-panel' : hash;
+  if (!esPaciente && !VISTAS_STAFF.includes(vista) && !vista.startsWith('paciente-')) vista = 'dashboard';
   const seccion = vista.startsWith('paciente-') ? 'pacientes' : vista;
+  const nav = esPaciente ? NAV_PACIENTE : NAV_STAFF;
+
   const estado = health.isSuccess
     ? ['var(--sage)', 'API conectada']
     : health.isError
@@ -42,14 +57,16 @@ export default function App() {
     <div className="app">
       <nav className="side" aria-label="Principal">
         <div className="brand"><i />KinesIA</div>
-        {NAV.map(([k, i, l]) => (
+        {nav.map(([k, i, l]) => (
           <button key={k} className={'nav' + (seccion === k ? ' on' : '')} aria-current={seccion === k ? 'page' : undefined} onClick={() => go(k)}>
             <Ico k={i} />{l}
           </button>
         ))}
-        <div className="foot"><i style={{ '--c': estado[0] }} />{estado[1]}</div>
+        <div className="foot"><i style={{ '--c': estado[0] }} />{estado[1]} · {usuario.nombre}</div>
+        <button className="btn btn-secundario" onClick={logout}>Cerrar sesión</button>
       </nav>
       <main>
+        {vista === 'mi-panel' && <MiPanel toast={setAviso} />}
         {vista === 'dashboard' && <Dashboard go={go} />}
         {vista === 'pacientes' && <Pacientes go={go} toast={setAviso} />}
         {vista.startsWith('paciente-') && <Perfil id={Number(vista.split('-')[1])} go={go} toast={setAviso} />}
