@@ -39,7 +39,7 @@ jobs:
         run: npm install
 
       - name: Run AG and API tests
-        run: npm test
+        run: JWT_SECRET=test-secret npm test
 
       - name: Remove development dependencies
         run: npm prune --omit=dev

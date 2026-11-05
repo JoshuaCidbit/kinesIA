@@ -23,3 +23,19 @@ module.exports = sequelize.define('Usuario', {
   defaultScope: { attributes: { exclude: ['password_hash'] } },
   scopes: { conPassword: {} }
 });
+
+// Definir toJSON en el prototipo para agregar firma a fotoUrl cuando hay fotoPath
+// Esto debe hacerse después del define(), ya que Sequelize tiene su propia lógica de toJSON
+Usuario.prototype.toJSON = function() {
+  const values = { ... this.dataValues };
+  if (values.fotoPath && !values.fotoUrl.includes('sig')) {
+    const crypto = require('crypto');
+    const uuid = crypto.randomUUID();
+    const timestamp = Date.now() + 3600 * 1000 * 24 * 365 * 10;
+    const stringToSign = `${uuid}\n${timestamp}`;
+    const firma = crypto.createHash('sha256').update(stringToSign).digest('base64');
+    const signature = encodeURIComponent(firma).replace(/%%/g, '%25');
+    values.fotoUrl = `${values.fotoUrl}?sig=${signature}`;
+  }
+  return values;
+};
