@@ -73,15 +73,15 @@ export default function Rutinas({ toast }) {
         {rutinas.data?.map((r) => {
           const n = usos(r.id);
           return (
-            <div key={r.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'center', background: 'var(--bg)', borderRadius: 10, padding: '14px 0' }}>
+            <div key={r.id} className="card pcard">
+              <div className="gauge-wrap">
                 <Gauge ang={r.anguloObjetivo} />
               </div>
               <b>{r.nombre}</b>
-              <span className="muted" style={{ fontSize: 14 }}>{r.descripcion}</span>
+              <span className="muted desc">{r.descripcion}</span>
               <small className="muted">{n > 0 ? `${n} sesiones asociadas` : 'Sin sesiones asociadas'}</small>
-              <div style={{ display: 'flex', gap: 8, marginTop: 'auto' }}>
-                <button className="btn" style={{ flex: 1 }} onClick={() => setModal({ tipo: 'form', rutina: r })}>Editar</button>
+              <div className="btns">
+                <button className="btn" onClick={() => setModal({ tipo: 'form', rutina: r })}>Editar</button>
                 <button className="btn dng" onClick={() => pedirBorrar(r)}>Eliminar</button>
               </div>
             </div>

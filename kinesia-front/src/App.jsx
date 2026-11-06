@@ -64,7 +64,7 @@ let vista = esPaciente ? 'mi-panel' : hash;
           </button>
         ))}
         <div className="foot"><i style={{ '--c': estado[0] }} />{estado[1]} · {usuario.nombre}</div>
-        <button className="btn btn-secundario" onClick={logout}>Cerrar sesión</button>
+        <button className="btn" onClick={logout}>Cerrar sesión</button>
       </nav>
       <main>
         {vista === 'mi-panel' && <MiPanel toast={setAviso} />}

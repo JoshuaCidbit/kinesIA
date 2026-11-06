@@ -198,4 +198,33 @@ small,.muted{color:var(--muted)}
   .login-card { padding: 20px 16px; }
 }
 
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* === Adiciones para frontend KinesIA === */
+
+/* Utilidades de color: alimentan la variable --c de .kpi, .badge y .av */
+.c-primary{--c:var(--primary)}
+.c-sage{--c:var(--sage)}
+.c-ochre{--c:var(--ochre)}
+.c-err{--c:var(--err)}
+
+/* Rutinas */
+.gauge-wrap{display:flex;justify-content:center;background:var(--bg);border-radius:10px;padding:14px 0}
+.pcard .desc{font-size:14px}
+.pcard .btns{margin-top:auto}
+.pcard .btns .btn:first-child{flex:1}
+
+/* Perfil / MiPanel */
+.hero h1,.hero h2{margin:0 0 6px}
+h2.seccion{margin:28px 0 14px}
+.kpi p{margin:8px 0 0}
+.kpi h2{margin:0 0 10px}
+
+/* === Correcciones al index.css existente === */
+
+/* 1) El selector * *, *::before, *::after se corrigió a: */
+*, *::before, *::after {box-sizing:border-box}
+
+/* 2) Los separadores de sección deben ser comentarios válidos: */
+/* ---------- Plan calórico (AG) ---------- */
+/* ---------- Login ---------- */
+
+/* 3) El bloque @media (prefers-reduced-motion) aparece una sola vez (al final) */

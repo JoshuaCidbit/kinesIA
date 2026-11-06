@@ -1,31 +1,38 @@
-import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { go } from '../App';
 
 export default function Pacientes({ go, toast }) {
   const { usuario } = useAuth();
 
-  const esPaciente = usuario.rol === 'paciente';
+  // El paciente no tiene acceso a esta página
+  if (usuario.rol === 'paciente') return null;
 
-  if (esPaciente) {
-    return null; // El paciente no tiene acceso a esta página
-  }
-
-  // Coach o admin
-  const esCoach = usuario.rol === 'coach';
   const esAdmin = usuario.rol === 'admin';
 
   return (
-    <div>
-      <h2>Pacientes</h2>
-      {esAdmin && (
-        <p>
-          <strong>Modo admin:</strong> puedes ver todos los pacientes y asignar coaches.
-        </p>
-      )}
-      <p>Modo coach: ves solo tus pacientes asignados.</p>
-      <p>Total de pacientes: pending</p>
-      <button>Registrar nuevo paciente</button>
-    </div>
+    <>
+      <h1>Pacientes</h1>
+      <p className="sub">
+        {esAdmin
+          ? 'Puedes ver todos los pacientes y asignar coaches.'
+          : 'Ves solo tus pacientes asignados.'}
+      </p>
+
+      <div className="bar">
+        <button className="btn pri">Registrar nuevo paciente</button>
+      </div>
+
+      <div className="grid2">
+        <div className="card kpi">
+          <b>—</b>
+          <span>Total de pacientes (pendiente de conectar)</span>
+        </div>
+        <div className="card">
+          <h2>Tu acceso</h2>
+          <span className={'badge ' + (esAdmin ? 'c-ochre' : 'c-sage')}>
+            {esAdmin ? 'Modo admin' : 'Modo coach'}
+          </span>
+        </div>
+      </div>
+    </>
   );
 }
