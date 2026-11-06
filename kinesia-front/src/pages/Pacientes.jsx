@@ -1,3 +1,17 @@
+# Diagnóstico: Desde el panel admin solo se ven usuarios paciente
+# 
+# Causa raíz: En kinesia-api/src/controllers/usuario.controller.js línea 46,
+# el método `listar` siempre tenía `const where = { rol: 'paciente' }`, ignorando
+# el rol del usuario administrador. Los coaches y otros admins no aparecían en la lista.
+# 
+# Solución aplicada: Se modificó el filtro `where` para ser condicional:
+# - Admin: sin filtro de rol, trae a todos los usuarios (pacientes + coaches + admins)
+# - Coach: where.rol = 'paciente' + where.coachId = usuario.id (solo sus pacientes)
+# - Paciente: acceso denegado (403)
+# 
+# Archivos clave: usuario.controller.js, rutas usuario.routes.js, Pacientes.jsx, Dashboard.jsx
+# 
+# Reporte completo: problemas.md y codigo.md en el directorio raíz
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import FormUsuario from '../components/FormUsuario';
