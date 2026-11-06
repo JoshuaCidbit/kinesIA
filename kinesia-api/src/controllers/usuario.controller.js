@@ -40,15 +40,11 @@ exports.crear = async (req, res) => {
   } catch (err) { manejarError(res, err); }
 };
 
-// GET /api/usuarios   (coach: solo sus pacientes; admin: todos los usuarios)
+// GET /api/usuarios   (coach: solo sus pacientes; admin: todos los pacientes)
 exports.listar = async (req, res) => {
   try {
-    const where = {};
-    if (req.usuario.rol === 'coach') {
-      where.rol = 'paciente';
-      where.coachId = req.usuario.id;
-    }
-    // admin: sin filtro de rol, trae pacientes, coaches y admins
+    const where = { rol: 'paciente' };
+    if (req.usuario.rol === 'coach') where.coachId = req.usuario.id;
     res.json(await Usuario.findAll({ where, order: [['id', 'ASC']] }));
   } catch (err) { manejarError(res, err); }
 };
