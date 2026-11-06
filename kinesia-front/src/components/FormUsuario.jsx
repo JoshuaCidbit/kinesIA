@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { Modal } from './ui';
+import { api } from '../lib/api';
 
-export default function FormUsuario({ esAdmin, toast, onClose }) {
+export default function FormUsuario({ esAdmin, toast, onClose, onCreated }) {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rol, setRol] = useState(esAdmin ? 'paciente' : 'paciente');
+  const [rol, setRol] = useState('paciente');
   const [coachId, setCoachId] = useState('');
-  const [esCoachOptions, setCoachOptions] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const ROLES = ['paciente', 'coach', 'admin'];
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!nombre.trim()) {
@@ -27,25 +26,36 @@ export default function FormUsuario({ esAdmin, toast, onClose }) {
       return;
     }
 
-    const datos = {
-      nombre: nombre.trim(),
-      email: email.trim(),
-      password: password,
-      rol: rol,
-    };
+    setLoading(true);
+    try {
+      const body = {
+        nombre: nombre.trim(),
+        email: email.trim(),
+        password: password,
+        rol: rol,
+      };
 
-    if (rol === 'paciente' && coachId) {
-      datos.coachId = Number(coachId);
+      if (rol === 'paciente' && coachId) {
+        body.coachId = Number(coachId);
+      }
+
+      await api('/api/usuarios', {
+        method: 'POST',
+        body,
+      });
+
+      toast?.('Usuario creado correctamente');
+      onClose?.();
+      onCreated?.();
+    } catch (e) {
+      toast?.(e.message || 'No se pudo crear el usuario');
+    } finally {
+      setLoading(false);
     }
-
-    // Llamada al API - se usaría: usuarios.crear(datos)
-    // Por ahora solo cerramos y mostramos éxito
-    onClose?.();
-    toast?.('Usuario creado correctamente');
   };
 
   return (
-    <Modal titulo={`Nuevo usuario · ${esAdmin ? 'Administrador' : 'Panel de Coach'}`} onClose={onClose} className="form-modal">
+    <Modal titulo={esAdmin ? 'Registrar nuevo usuario' : 'Registrar nuevo paciente'} onClose={onClose} className="form-modal">
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Nombre <span className="required">*</span></label>
@@ -89,6 +99,7 @@ export default function FormUsuario({ esAdmin, toast, onClose }) {
             <label>Rol <span className="required">*</span></label>
             <select
               className="input"
+              value={rol}
               onChange={(e) => setRol(e.target.value)}
             >
               <option value="paciente">Paciente</option>
@@ -101,18 +112,18 @@ export default function FormUsuario({ esAdmin, toast, onClose }) {
         {esAdmin && rol === 'paciente' && (
           <div className="form-group">
             <label>Coach asignado</label>
-            <select className="input" onChange={(e) => setCoachId(e.target.value)}>
-              <option value="">Ningún coach</option>
-              <option value="1">Coach 1</option>
-              <option value="2">Coach 2</option>
-              {/* Se poblaría con la lista real de coaches */}
+            <select className="input" value={coachId} onChange={(e) => setCoachId(e.target.value)}>
+              <option value="">Sin coach</option>
+              {/* Se poblaría con la lista real de coaches desde el parent */}
             </select>
           </div>
         )}
 
+        {loading && <p>Guardando...</p>}
+
         <div className="actions">
           <button type="button" className="btn" onClick={onClose}>Cancelar</button>
-          <button className="btn pri" type="submit">Crear usuario</button>
+          <button className="btn pri" type="submit" disabled={loading}>Crear usuario</button>
         </div>
       </form>
     </Modal>

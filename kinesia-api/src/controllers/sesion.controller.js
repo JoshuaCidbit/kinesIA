@@ -6,7 +6,7 @@ const { Usuario, Rutina, SesionTerapia } = require('../models');
 // INCLUIR: asociaciones por defecto para las queries de sesiones
 const INCLUIR = [
   { model: Usuario, attributes: ['id', 'nombre', 'email', 'rol', 'fotoUrl'] },
-  { model: Rutina, attributes: ['id', 'nombre', 'descripcion', 'duracion', 'calorias'] }
+  { model: Rutina, attributes: ['id', 'nombre', 'descripcion', 'anguloObjetivo', 'mediaUrl'] }
 ];
 
 exports.crear = async (req, res) => {
