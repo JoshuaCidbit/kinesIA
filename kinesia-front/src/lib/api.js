@@ -21,16 +21,15 @@ const MENSAJES = {
 
 async function request(base, path, { method = "GET", body, form, headers = {} } = {}) {
   const opts = { method, headers: { Accept: "application/json", ...headers } };
+  if (!opts.headers.Authorization && path !== '/api/usuarios/login') {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('kinesia_token') : null;
+    if (token) opts.headers.Authorization = `Bearer ${token}`;
+  }
   if (form) {
     opts.body = form; // FormData: el navegador pone el Content-Type con boundary; NO agregues Content-Type manualmente
   } else if (body !== undefined) {
     opts.headers["Content-Type"] = "application/json";
     opts.body = JSON.stringify(body);
-    // Agregar header de autorización solo para requests no-form (login y otros usan el header global)
-    if (!headers.Authorization) {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('kinesia_token') : null;
-      if (token) opts.headers.Authorization = `Bearer ${token}`;
-    }
   }
 
   let res;
