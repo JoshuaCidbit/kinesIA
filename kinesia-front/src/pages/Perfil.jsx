@@ -1,32 +1,34 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../lib/api';
+import { api, usuarios } from '../lib/api';
 import { Avatar, Mensaje } from '../components/ui';
+import PlanCalorico from '../components/PlanCalorico';
+import FormSesion from '../components/FormSesion';
 
 const CLASE_ROL = { admin: 'c-ochre', coach: 'c-sage', paciente: 'c-primary' };
 
-export default function Perfil({ id, go, toast, embebido = false }) {
+export default function Perfil({ id, go, toast, embebido = false, onSesionCreada }) {
   const { usuario } = useAuth();
   const esPaciente = usuario.rol === 'paciente';
   const esCoach = usuario.rol === 'coach';
   const esAdmin = usuario.rol === 'admin';
-
   const pacienteId = id || usuario.id;
 
-  // Cargar datos del paciente
   const [paciente, setPaciente] = useState(null);
-  useEffect(() => {
-    const cargar = async () => {
-      try {
-        const data = await api(`/api/usuarios/${pacienteId}`);
-        setPaciente(data);
-      } catch (err) {
-        console.error('Error cargando perfil:', err);
-        if (err.status === 403) toast?.('No tienes acceso a este paciente');
-      }
-    };
-    cargar();
+  const [verPlan, setVerPlan] = useState(false);
+  const [registrando, setRegistrando] = useState(false);
+  const inputFoto = useRef(null);
+
+  const cargar = useCallback(async () => {
+    try {
+      setPaciente(await api(`/api/usuarios/${pacienteId}`));
+    } catch (err) {
+      console.error('Error cargando perfil:', err);
+      if (err.status === 403) toast?.('No tienes acceso a este paciente');
+    }
   }, [pacienteId]);
+
+  useEffect(() => { cargar(); }, [cargar]);
 
   if (!paciente) return <Mensaje titulo="Cargando perfil..." />;
 
@@ -35,8 +37,19 @@ export default function Perfil({ id, go, toast, embebido = false }) {
 
   const quitarCoach = () =>
     api(`/api/usuarios/${pacienteId}/coach`, { method: 'PUT', body: { coachId: null } })
-      .then(() => toast?.('Coach quitado'))
+      .then(() => { toast?.('Coach quitado'); cargar(); })
       .catch((err) => toast?.(err.message));
+
+  const subirFoto = async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    try {
+      await usuarios.subirFoto(pacienteId, f);
+      toast?.('Foto actualizada');
+      await cargar();
+    } catch (err) { toast?.(err.message); }
+    e.target.value = '';
+  };
 
   return (
     <>
@@ -63,10 +76,10 @@ export default function Perfil({ id, go, toast, embebido = false }) {
           <div className="card">
             <h2>Mis datos</h2>
             <div className="btns">
-              <button className="btn">Cambiar foto</button>
-              <button className="btn">Plan calórico</button>
-              <button className="btn pri">Registrar sesión</button>
-              <button className="btn">Cambiar contraseña</button>
+              <input ref={inputFoto} type="file" accept="image/*" hidden onChange={subirFoto} />
+              <button className="btn" onClick={() => inputFoto.current?.click()}>Cambiar foto</button>
+              <button className="btn" onClick={() => setVerPlan(true)}>Plan calórico</button>
+              <button className="btn pri" onClick={() => setRegistrando(true)}>Registrar sesión</button>
             </div>
           </div>
         )}
@@ -85,7 +98,7 @@ export default function Perfil({ id, go, toast, embebido = false }) {
         {esAdmin && (
           <div className="card">
             <h2>Panel administrativo</h2>
-            <p>Coach asignado: <span className="muted">pendiente</span></p>
+            <p>Coach asignado: <span className="muted">{paciente.coach?.nombre ?? 'sin coach'}</span></p>
             <div className="btns">
               <button className="btn dng" onClick={quitarCoach}>Quitar coach</button>
               <button className="btn">Restablecer contraseña</button>
@@ -93,6 +106,16 @@ export default function Perfil({ id, go, toast, embebido = false }) {
           </div>
         )}
       </div>
+
+      {verPlan && <PlanCalorico usuario={paciente} toast={toast} onClose={() => setVerPlan(false)} />}
+      {registrando && (
+        <FormSesion
+          usuario={paciente}
+          toast={toast}
+          onClose={() => setRegistrando(false)}
+          onCreada={onSesionCreada}
+        />
+      )}
     </>
   );
 }

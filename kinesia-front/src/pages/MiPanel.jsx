@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../lib/api';
 import { nivel } from '../lib/utils';
 import { Leyenda } from '../components/ui';
+import PlanCalorico from '../components/PlanCalorico';
 import Perfil from './Perfil';
 
 // clase de color + texto según el estado de la carga
@@ -16,20 +17,20 @@ export default function MiPanel({ toast }) {
   const { usuario } = useAuth();
   const [estado, setEstado] = useState('cargando');
   const [sesiones, setSesiones] = useState([]);
+  const [verPlan, setVerPlan] = useState(false);
 
-  useEffect(() => {
-    const cargarDatos = async () => {
-      try {
-        const data = await api('/api/sesiones/usuario/' + usuario.id);
-        setSesiones(data);
-        setEstado('ok');
-      } catch (err) {
-        console.error('Error cargando MiPanel:', err);
-        setEstado('error');
-      }
-    };
-    cargarDatos();
+  const cargarDatos = useCallback(async () => {
+    try {
+      const data = await api('/api/sesiones/usuario/' + usuario.id);
+      setSesiones(Array.isArray(data) ? data : []);
+      setEstado('ok');
+    } catch (err) {
+      console.error('Error cargando MiPanel:', err);
+      setEstado('error');
+    }
   }, [usuario.id]);
+
+  useEffect(() => { cargarDatos(); }, [cargarDatos]);
 
   const total = sesiones.length;
   const promedio = total > 0
@@ -55,14 +56,15 @@ export default function MiPanel({ toast }) {
         </div>
         <div className="card kpi c-ochre">
           <h2>Plan calórico</h2>
-          <button className="btn">Ver plan</button>
+          <button className="btn" onClick={() => setVerPlan(true)}>Ver plan</button>
         </div>
       </div>
 
       <Leyenda />
 
       <h2 className="seccion">Mi perfil</h2>
-      <Perfil id={usuario.id} go={() => {}} toast={toast} embebido />
+      <Perfil id={usuario.id} go={() => {}} toast={toast} embebido onSesionCreada={cargarDatos} />
+{verPlan && <PlanCalorico usuario={usuario} toast={toast} onClose={() => setVerPlan(false)} />}
     </>
   );
 }

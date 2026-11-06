@@ -8,6 +8,7 @@ import Perfil from './pages/Perfil';
 import Rutinas from './pages/Rutinas';
 import Login from './pages/Login';
 import MiPanel from './pages/MiPanel';
+import MiCuenta from './components/MiCuenta';   // NUEVO
 
 // Función go derivada del rol (exportada para uso en páginas)
 export const go = (x) => { location.hash = x; scrollTo(0, 0); };
@@ -25,6 +26,7 @@ export default function App() {
   const { usuario, cargando, logout } = useAuth();
   const [hash, setHash] = useState(leerHash);
   const [aviso, setAviso] = useState('');
+  const [cuenta, setCuenta] = useState(false);  // NUEVO
   const health = useHealth();
 
   useEffect(() => {
@@ -64,7 +66,7 @@ let vista = esPaciente ? 'mi-panel' : hash;
           </button>
         ))}
         <div className="foot"><i style={{ '--c': estado[0] }} />{estado[1]} · {usuario.nombre}</div>
-        <button className="btn" onClick={logout}>Cerrar sesión</button>
+        <button className="btn" onClick={() => setCuenta(true)}>Perfil</button>
       </nav>
       <main>
         {vista === 'mi-panel' && <MiPanel toast={setAviso} />}
@@ -74,6 +76,7 @@ let vista = esPaciente ? 'mi-panel' : hash;
         {vista === 'rutinas' && <Rutinas toast={setAviso} />}
       </main>
       {aviso && <div className="toast" role="status">{aviso}</div>}
+      {cuenta && <MiCuenta toast={setAviso} onClose={() => setCuenta(false)} onLogout={logout} />}
     </div>
   );
 }
