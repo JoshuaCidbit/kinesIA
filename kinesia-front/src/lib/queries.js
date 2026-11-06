@@ -166,17 +166,7 @@ export function useGenerarPlanCalorico(usuarioId) {
   });
 }
 
-export function useCrearUsuario() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: usuarios.crear,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: keys.usuarios });
-      qc.invalidateQueries({ queryKey: ['coaches'] });
-    },
-  });
-}
-
+// Línea 180: useCoaches (revisar que existe y tenga enabled)
 export function useCoaches(enabled = true) {
   return useQuery({ queryKey: ['coaches'], queryFn: usuarios.coaches, enabled });
 }
