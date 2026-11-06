@@ -5,10 +5,16 @@ import { api } from '../lib/api';
 
 export default function MiCuenta({ onClose, onLogout, toast }) {
   const { usuario } = useAuth();
+  const [cambiando, setCambiando] = useState(false);
   const [actual, setActual] = useState('');
   const [nueva, setNueva] = useState('');
   const [confirmar, setConfirmar] = useState('');
   const [guardando, setGuardando] = useState(false);
+
+  const cancelar = () => {
+    setCambiando(false);
+    setActual(''); setNueva(''); setConfirmar('');
+  };
 
   const cambiar = async (e) => {
     e.preventDefault();
@@ -18,7 +24,7 @@ export default function MiCuenta({ onClose, onLogout, toast }) {
     try {
       await api('/api/usuarios/me/password', { method: 'PUT', body: { actual, nueva } });
       toast?.('Contraseña actualizada');
-      setActual(''); setNueva(''); setConfirmar('');
+      cancelar();
     } catch (err) { toast?.(err.message); }
     finally { setGuardando(false); }
   };
@@ -28,28 +34,32 @@ export default function MiCuenta({ onClose, onLogout, toast }) {
       <p><b>{usuario.nombre}</b> · <span className="muted">{usuario.rol}</span></p>
       <p className="muted">{usuario.email}</p>
 
-      <form onSubmit={cambiar}>
-        <h3>Cambiar contraseña</h3>
-        <div className="form-group">
-          <label>Contraseña actual</label>
-          <input className="input" type="password" required value={actual} onChange={(e) => setActual(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label>Nueva contraseña</label>
-          <input className="input" type="password" required minLength={8} value={nueva} onChange={(e) => setNueva(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label>Confirmar nueva contraseña</label>
-          <input className="input" type="password" required minLength={8} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
-        </div>
+      {!cambiando ? (
         <div className="actions">
-          <button type="button" className="btn" onClick={onClose}>Cerrar</button>
-          <button className="btn pri" disabled={guardando}>{guardando ? 'Guardando...' : 'Cambiar contraseña'}</button>
+          <button type="button" className="btn" onClick={() => setCambiando(true)}>Cambiar contraseña</button>
+          <button type="button" className="btn dng" onClick={onLogout}>Cerrar sesión</button>
         </div>
-      </form>
-
-      <hr />
-      <button type="button" className="btn dng" onClick={onLogout}>Cerrar sesión</button>
+      ) : (
+        <form onSubmit={cambiar}>
+          <h3>Cambiar contraseña</h3>
+          <div className="form-group">
+            <label>Contraseña actual</label>
+            <input className="input" type="password" required value={actual} onChange={(e) => setActual(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label>Nueva contraseña</label>
+            <input className="input" type="password" required minLength={8} value={nueva} onChange={(e) => setNueva(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label>Confirmar nueva contraseña</label>
+            <input className="input" type="password" required minLength={8} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
+          </div>
+          <div className="actions">
+            <button type="button" className="btn" onClick={cancelar}>Cancelar</button>
+            <button className="btn pri" disabled={guardando}>{guardando ? 'Guardando...' : 'Guardar contraseña'}</button>
+          </div>
+        </form>
+      )}
     </Modal>
   );
 }

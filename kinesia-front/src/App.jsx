@@ -26,7 +26,11 @@ export default function App() {
   const { usuario, cargando, logout } = useAuth();
   const [hash, setHash] = useState(leerHash);
   const [aviso, setAviso] = useState('');
-  const [cuenta, setCuenta] = useState(false);  // NUEVO
+  const [cuenta, setCuenta] = useState(false);
+  const cerrarSesion = () => {
+    setCuenta(false);   // cierra el modal antes de salir
+    logout();           // tu función actual de cerrar sesión;
+  };
   const health = useHealth();
 
   useEffect(() => {
@@ -76,7 +80,7 @@ let vista = esPaciente ? 'mi-panel' : hash;
         {vista === 'rutinas' && <Rutinas toast={setAviso} />}
       </main>
       {aviso && <div className="toast" role="status">{aviso}</div>}
-      {cuenta && <MiCuenta toast={setAviso} onClose={() => setCuenta(false)} onLogout={logout} />}
+      {cuenta && <MiCuenta toast={setAviso} onClose={() => setCuenta(false)} onLogout={cerrarSesion} />}
     </div>
   );
 }
