@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import FormUsuario from '../components/FormUsuario';
 
 export default function Pacientes({ go, toast }) {
   const { usuario } = useAuth();
+  const [creando, setCreando] = useState(false);
+  const esAdmin = usuario.rol === 'admin';
 
   // El paciente no tiene acceso a esta página
   if (usuario.rol === 'paciente') return null;
-
-  const esAdmin = usuario.rol === 'admin';
 
   return (
     <>
@@ -18,7 +20,13 @@ export default function Pacientes({ go, toast }) {
       </p>
 
       <div className="bar">
-        <button className="btn pri">Registrar nuevo paciente</button>
+        {esAdmin ? (
+          <button className="btn pri" onClick={() => setCreando(true)}>
+            {creando ? 'Registrando...' : 'Registrar nuevo usuario'}
+          </button>
+        ) : (
+          <button className="btn pri">Registrar nuevo paciente</button>
+        )}
       </div>
 
       <div className="grid2">
@@ -33,6 +41,8 @@ export default function Pacientes({ go, toast }) {
           </span>
         </div>
       </div>
+
+      {creando && <FormUsuario esAdmin={esAdmin} toast={toast} onClose={() => setCreando(false)} />}
     </>
   );
 }

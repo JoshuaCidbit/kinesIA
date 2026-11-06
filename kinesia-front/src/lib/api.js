@@ -68,6 +68,7 @@ export const usuarios = {
   crear: (data) => api("/api/usuarios", { method: "POST", body: data }),
   actualizar: (id, data) => api(`/api/usuarios/${id}`, { method: "PUT", body: data }),
   eliminar: (id) => api(`/api/usuarios/${id}`, { method: "DELETE" }),
+  coaches: () => api("/api/usuarios/coaches"),
   // El nombre del campo ("foto") debe coincidir con upload.single("...") en multer
   subirFoto: (id, archivo) => api(`/api/usuarios/${id}/foto`, { method: "POST", form: fd("foto", archivo) }),
 };

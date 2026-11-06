@@ -165,3 +165,18 @@ export function useGenerarPlanCalorico(usuarioId) {
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.agUsuario(usuarioId) }),
   });
 }
+
+export function useCrearUsuario() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: usuarios.crear,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: keys.usuarios });
+      qc.invalidateQueries({ queryKey: ['coaches'] });
+    },
+  });
+}
+
+export function useCoaches(enabled = true) {
+  return useQuery({ queryKey: ['coaches'], queryFn: usuarios.coaches, enabled });
+}
