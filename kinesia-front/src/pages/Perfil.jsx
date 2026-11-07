@@ -91,11 +91,9 @@ export default function Perfil({ id, go, toast, embebido = false, onSesionCreada
           </div>
 
           {/* Acciones */}
-          <div className="card cta">
-            <div className="bar">
-              <button className="btn pri" onClick={() => setRegistrando(true)}>Registrar sesión</button>
-              <button className="btn ember" onClick={() => setVerPlan(true)}>Plan calórico</button>
-            </div>
+          <div className="bar">
+            <button className="btn pri" onClick={() => setRegistrando(true)}>Registrar sesión</button>
+            <button className="btn ember" onClick={() => setVerPlan(true)}>Plan calórico</button>
           </div>
 
           {/* Mis datos */}

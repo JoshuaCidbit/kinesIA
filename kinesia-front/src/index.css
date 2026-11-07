@@ -252,7 +252,6 @@ small,.muted{color:var(--ink-soft)}
 /* Perfil / MiPanel */
 .hero h1,.hero h2{margin:0 0 6px}
 .progreso-num{display:block;font-size:44px;letter-spacing:-.03em;line-height:1.1;margin:2px 0 8px}
-.cta{margin-bottom:20px}
 h2.seccion{margin:28px 0 14px}
 .kpi p{margin:8px 0 0}
 .kpi h2{margin:0 0 10px}
