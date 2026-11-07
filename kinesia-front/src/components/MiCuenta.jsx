@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Modal } from './ui';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { api } from '../lib/api';
+import { api, usuarios } from '../lib/api';
 
 export default function MiCuenta({ onClose, onLogout, toast }) {
   const { usuario } = useAuth();
@@ -12,6 +12,17 @@ export default function MiCuenta({ onClose, onLogout, toast }) {
   const [nueva, setNueva] = useState('');
   const [confirmar, setConfirmar] = useState('');
   const [guardando, setGuardando] = useState(false);
+  const inputFoto = useRef(null);
+
+  const subirFoto = async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    try {
+      await usuarios.subirFoto(usuario.id, f);
+      toast?.('Foto actualizada');
+    } catch (err) { toast?.(err.message); }
+    e.target.value = '';
+  };
 
   const cancelar = () => {
     setCambiando(false);
@@ -38,6 +49,8 @@ export default function MiCuenta({ onClose, onLogout, toast }) {
 
       {!cambiando ? (
         <div className="actions">
+          <input ref={inputFoto} type="file" accept="image/*" hidden onChange={subirFoto} />
+          <button type="button" className="btn" onClick={() => inputFoto.current?.click()}>Cambiar foto</button>
           <button type="button" className="btn" onClick={() => setCambiando(true)}>Cambiar contraseña</button>
           <button type="button" className="btn dng" onClick={onLogout}>Cerrar sesión</button>
         </div>
@@ -66,7 +79,7 @@ export default function MiCuenta({ onClose, onLogout, toast }) {
       <div className="tema">
         <span className="muted">Tema</span>
         <button type="button" className="btn" onClick={toggleTema} aria-pressed={tema === 'dark'}>
-          {tema === 'dark' ? '☀️ Claro' : '🌙 Oscuro'}
+          {tema === 'dark' ? 'Claro' : 'Obscuro'}
         </button>
       </div>
     </Modal>
