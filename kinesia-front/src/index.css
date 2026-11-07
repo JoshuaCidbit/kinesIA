@@ -59,7 +59,7 @@ h3{font-size:15px;font-weight:500;margin:0 0 12px}
 .sub{color:var(--ink-soft);margin:0 0 20px}
 .card{background:var(--bone);border:1px solid var(--vein);border-radius:var(--r-lg);padding:20px}
 .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:16px}
-.grid2{display:grid;grid-template-columns:3fr 2fr;gap:16px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:3fr 2fr;gap:16px;margin-bottom:20px}
 .kpi{border-left:4px solid var(--c,var(--root))}
 .kpi b{display:block;font-size:36px;letter-spacing:-.03em;line-height:1.1}
 .kpi span{color:var(--ink-soft);font-size:14px}
