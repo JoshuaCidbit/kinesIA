@@ -35,6 +35,6 @@ router.delete('/:id', auth, rol('coach', 'admin'), delPaciente, c.eliminar);
 // Paciente (solo el suyo), coach (los suyos), admin (todos)
 router.get('/:id', auth, delPaciente, c.obtener);
 router.put('/:id', auth, delPaciente, c.actualizar);
-router.post('/:id/foto', auth, delPaciente, subirFoto);
+router.post('/:id/foto', auth, delPaciente, subirFoto, c.subirFoto);
 
 module.exports = router;

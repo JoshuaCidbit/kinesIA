@@ -2,7 +2,7 @@ const { Usuario } = require('../models');
 const bcrypt = require('bcryptjs');
 const { pick, manejarError } = require('../utils/helpers');
 const { generarToken } = require('../middlewares/auth');
-const { eliminarArchivo } = require('../services/storage.service');
+const { subirArchivo, eliminarArchivo } = require('../services/storage.service');
 
 const CAMPOS = ['nombre', 'email', 'edad'];
 const ROLES = ['paciente', 'coach', 'admin'];
@@ -127,6 +127,22 @@ exports.cambiarMiPassword = async (req, res) => {
     if (!ok) return res.status(401).json({ error: 'La contraseña actual no es correcta' });
     await u.update({ password_hash: await bcrypt.hash(nueva, 10) });
     res.json({ mensaje: 'Contraseña actualizada' });
+  } catch (err) { manejarError(res, err); }
+};
+
+// POST /api/usuarios/:id/foto   (campo "foto")
+exports.subirFoto = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'Falta el archivo "foto"' });
+    const usuario = await Usuario.findByPk(req.params.id);
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const anterior = usuario.fotoPath;
+    const { path, url } = await subirArchivo(req.file, 'usuarios');
+    await usuario.update({ fotoPath: path, fotoUrl: url });
+    await eliminarArchivo(anterior); // borra la foto previa, si había
+
+    res.json(usuario); // toJSON ya entrega la URL firmada
   } catch (err) { manejarError(res, err); }
 };
 
