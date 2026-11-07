@@ -45,6 +45,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              aria-describedby={error ? 'login-error' : undefined}
             />
           </label>
 
@@ -57,15 +58,16 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              aria-describedby={error ? 'login-error' : undefined}
             />
           </label>
 
           {error && (
-            <p role="alert" className="msg-err">{error}</p>
+            <p id="login-error" role="alert" className="msg-err">{error}</p>
           )}
 
           <button type="submit" className="btn pri" disabled={enviando}>
-            {enviando ? 'Entrando…' : 'Entrar'}
+            {enviando ? 'Ingresando…' : 'Iniciar sesión'}
           </button>
         </form>
 

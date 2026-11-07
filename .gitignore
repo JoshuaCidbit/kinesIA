@@ -19,3 +19,6 @@ dist/
 
 # Documentación local (no se versiona)
 mds/
+
+.agents/
+skills-lock.json

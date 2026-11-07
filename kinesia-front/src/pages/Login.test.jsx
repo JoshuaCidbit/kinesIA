@@ -36,7 +36,7 @@ describe('Login', () => {
     const user = userEvent.setup();
     await user.type(screen.getByLabelText('Correo electrónico'), 'ana@test.com');
     await user.type(screen.getByLabelText('Contraseña'), 'Test1234!');
-    await user.click(screen.getByRole('button', { name: /entrar/i }));
+    await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
 
     await waitFor(() => expect(localStorage.getItem('kinesia_token')).toBe('token-valido'));
     expect(api).toHaveBeenCalledWith('/api/usuarios/login', {
@@ -52,7 +52,7 @@ describe('Login', () => {
     const user = userEvent.setup();
     await user.type(screen.getByLabelText('Correo electrónico'), 'ana@test.com');
     await user.type(screen.getByLabelText('Contraseña'), 'incorrecta123');
-    await user.click(screen.getByRole('button', { name: /entrar/i }));
+    await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
 
     expect(await screen.findByText('Correo o contraseña incorrectos')).toBeInTheDocument();
     expect(localStorage.getItem('kinesia_token')).toBeNull();

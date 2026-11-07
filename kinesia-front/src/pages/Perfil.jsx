@@ -5,7 +5,7 @@ import { Avatar, Mensaje } from '../components/ui';
 import PlanCalorico from '../components/PlanCalorico';
 import FormSesion from '../components/FormSesion';
 
-const CLASE_ROL = { admin: 'c-ochre', coach: 'c-sage', paciente: 'c-primary' };
+const CLASE_ROL = { admin: 'c-ember', coach: 'c-sage', paciente: 'c-primary' };
 
 export default function Perfil({ id, go, toast, embebido = false, onSesionCreada }) {
   const { usuario } = useAuth();

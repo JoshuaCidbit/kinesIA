@@ -33,7 +33,7 @@ export default function Dashboard({ go }) {
 
   const total = estadisticas?.total ?? 0;
   const promedio = estadisticas?.promedio ?? 0;
-  const colorPrecision = total > 0 ? nivel(promedio)[0] : 'var(--primary)';
+  const colorPrecision = total > 0 ? nivel(promedio)[0] : 'var(--root)';
   const esAdmin = usuario.rol === 'admin';
 
   return (
@@ -52,8 +52,8 @@ export default function Dashboard({ go }) {
           <b>{promedio}%</b>
           <span>Precisión promedio</span>
         </div>
-        <div className={'card kpi ' + (esAdmin ? 'c-ochre' : 'c-sage')}>
-          <span className={'badge ' + (esAdmin ? 'c-ochre' : 'c-sage')}>
+        <div className={'card kpi ' + (esAdmin ? 'c-ember' : 'c-sage')}>
+          <span className={'badge ' + (esAdmin ? 'c-ember' : 'c-sage')}>
             {esAdmin ? 'Modo admin' : 'Coach activo'}
           </span>
           <p className="muted">

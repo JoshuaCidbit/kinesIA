@@ -29,7 +29,7 @@ function FormRutina({ inicial, onClose, onOk }) {
         {op.isError && <p className="msg-err">{op.error.message}</p>}
         <div className="actions">
           <button type="button" className="btn" onClick={onClose}>Cancelar</button>
-          <button className="btn pri" disabled={op.isPending}>{op.isPending ? 'Guardando...' : 'Guardar rutina'}</button>
+          <button type="submit" className="btn pri" disabled={op.isPending}>{op.isPending ? 'Guardando...' : 'Guardar rutina'}</button>
         </div>
       </form>
     </Modal>

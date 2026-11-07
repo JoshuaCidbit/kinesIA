@@ -58,7 +58,7 @@ export default function MiCuenta({ onClose, onLogout, toast }) {
           </div>
           <div className="actions">
             <button type="button" className="btn" onClick={cancelar}>Cancelar</button>
-            <button className="btn pri" disabled={guardando}>{guardando ? 'Guardando...' : 'Guardar contraseña'}</button>
+            <button type="submit" className="btn pri" disabled={guardando}>{guardando ? 'Guardando...' : 'Guardar contraseña'}</button>
           </div>
         </form>
       )}

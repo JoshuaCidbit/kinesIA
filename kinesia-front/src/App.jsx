@@ -60,8 +60,8 @@ export default function App() {
   const estado = health.isSuccess
     ? ['var(--sage)', 'API conectada']
     : health.isError
-    ? ['var(--err)', 'API sin conexión']
-    : ['var(--ochre)', 'Conectando...'];
+    ? ['var(--fault)', 'API sin conexión']
+    : ['var(--ember)', 'Conectando...'];
 
   return (
     <div className="app">

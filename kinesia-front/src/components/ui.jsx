@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { colorDe, ini, nivel } from '../lib/utils';
 
 const IC = {
@@ -26,16 +26,16 @@ export function Badge({ v }) {
   return <span className="badge" style={{ '--c': c }}>{Math.round(v)}% · {t}</span>;
 }
 
-export function Gauge({ ang, size = 120 }) {
+export function Gauge({ ang, size = 140 }) {
   const g = Math.max(0, Math.min(Number(ang) || 0, 179.9));
   const a = (g * Math.PI) / 180;
   const x = 60 - 48 * Math.cos(a);
   const y = 60 - 48 * Math.sin(a);
   return (
     <svg width={size} style={{ maxWidth: '100%', height: 'auto' }} viewBox="0 0 120 72" role="img" aria-label={`Ángulo ${Math.round(ang)} grados`}>
-      <path d="M12 60A48 48 0 0 1 108 60" fill="none" stroke="var(--line)" strokeWidth="9" strokeLinecap="round" />
-      <path d={`M12 60A48 48 0 0 1 ${x} ${y}`} fill="none" stroke="var(--ochre)" strokeWidth="9" strokeLinecap="round" />
-      <text x="60" y="58" textAnchor="middle" fontSize="22" fontWeight="700" fill="var(--text)">{Math.round(ang)}°</text>
+      <path d="M12 60A48 48 0 0 1 108 60" fill="none" stroke="var(--vein)" strokeWidth="9" strokeLinecap="round" />
+      <path d={`M12 60A48 48 0 0 1 ${x} ${y}`} fill="none" stroke="var(--root)" strokeWidth="11" strokeLinecap="round" />
+      <text x="60" y="58" textAnchor="middle" fontSize="26" fontWeight="700" fill="var(--ink)">{Math.round(ang)}°</text>
     </svg>
   );
 }
@@ -51,17 +51,18 @@ export function Chart({ valores }) {
   return (
     <div className="scroll">
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', minWidth: 420 }} role="img" aria-label="Precisión por sesión">
+        <title>Precisión por sesión</title>
         {[lo, 70, 85, 100].map((v) => (
           <g key={v}>
-            <line x1={pl} x2={W - pr} y1={Y(v)} y2={Y(v)} stroke="var(--line)" strokeDasharray={v === 70 || v === 85 ? '4 4' : '0'} />
-            <text x={pl - 8} y={Y(v) + 4} textAnchor="end" fontSize="11" fill="var(--muted)">{v}</text>
+            <line x1={pl} x2={W - pr} y1={Y(v)} y2={Y(v)} stroke="var(--vein)" strokeDasharray={v === 70 || v === 85 ? '4 4' : '0'} />
+            <text x={pl - 8} y={Y(v) + 4} textAnchor="end" fontSize="11" fill="var(--ink-soft)">{v}</text>
           </g>
         ))}
-        <polyline points={pts.map((p) => p.join(',')).join(' ')} fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinejoin="round" />
+        <polyline points={pts.map((p) => p.join(',')).join(' ')} fill="none" stroke="var(--root)" strokeWidth="2.5" strokeLinejoin="round" />
         {pts.map((p, i) => (
           <g key={i}>
-            <circle cx={p[0]} cy={p[1]} r="6" fill={nivel(valores[i])[0]} stroke="var(--surface)" strokeWidth="2" />
-            <text x={p[0]} y={H - 6} textAnchor="middle" fontSize="11" fill="var(--muted)">S{i + 1}</text>
+            <circle cx={p[0]} cy={p[1]} r="6" fill={nivel(valores[i])[0]} stroke="var(--bone)" strokeWidth="2" />
+            <text x={p[0]} y={H - 6} textAnchor="middle" fontSize="11" fill="var(--ink-soft)">S{i + 1}</text>
           </g>
         ))}
       </svg>
@@ -72,20 +73,34 @@ export function Chart({ valores }) {
 export const Leyenda = () => (
   <div className="legend">
     <span><i style={{ background: 'var(--sage)' }} />Buena (85+)</span>
-    <span><i style={{ background: 'var(--ochre)' }} />Regular (70–84)</span>
-    <span><i style={{ background: 'var(--err)' }} />Baja</span>
+    <span><i style={{ background: 'var(--ember)' }} />Regular (70–84)</span>
+    <span><i style={{ background: 'var(--fault)' }} />Baja</span>
   </div>
 );
 
 export function Modal({ titulo, children, onClose, className = '' }) {
+  const ref = useRef(null);
   useEffect(() => {
-    const h = (e) => e.key === 'Escape' && onClose();
+    const prev = document.activeElement;
+    const el = ref.current;
+    if (el) el.focus();
+    const h = (e) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key === 'Tab') {
+        const focos = el?.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (!focos?.length) return;
+        const primero = focos[0];
+        const ultimo = focos[focos.length - 1];
+        if (e.shiftKey && document.activeElement === primero) { e.preventDefault(); ultimo.focus(); }
+        else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primero.focus(); }
+      }
+    };
     addEventListener('keydown', h);
-    return () => removeEventListener('keydown', h);
+    return () => { removeEventListener('keydown', h); prev?.focus?.(); };
   }, [onClose]);
   return (
     <div className="modal" role="dialog" aria-modal="true" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={`card ${className}`.trim()}>
+      <div ref={ref} tabIndex={-1} className={`card ${className}`.trim()}>
         <h2>{titulo}</h2>
         {children}
       </div>
@@ -96,7 +111,7 @@ export function Modal({ titulo, children, onClose, className = '' }) {
 export function Mensaje({ titulo, texto, error }) {
   return (
     <div className="card empty">
-      <b style={error ? { color: 'var(--err)' } : undefined}>{titulo}</b>
+      <b style={error ? { color: 'var(--fault)' } : undefined}>{titulo}</b>
       {texto && <p className="muted">{texto}</p>}
     </div>
   );

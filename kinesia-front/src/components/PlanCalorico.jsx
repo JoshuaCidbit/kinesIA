@@ -259,6 +259,7 @@ export default function PlanCalorico({ usuario, onClose, toast }) {
         <div className="actions">
           <button type="button" className="btn" onClick={onClose}>Cerrar</button>
           <button
+            type="submit"
             className="btn pri"
             disabled={generar.isPending || elegidos.size === 0}
           >

@@ -66,7 +66,7 @@ export default function FormSesion({ usuario, toast, onClose, onCreada }) {
         </div>
         <div className="actions">
           <button type="button" className="btn" onClick={onClose}>Cancelar</button>
-          <button className="btn pri" disabled={enviando}>{enviando ? 'Guardando...' : 'Guardar sesión'}</button>
+          <button type="submit" className="btn pri" disabled={enviando}>{enviando ? 'Guardando...' : 'Guardar sesión'}</button>
         </div>
       </form>
     </Modal>

@@ -12,4 +12,4 @@ export const fmtFecha = (f) =>
   f ? new Date(f).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 
 export const nivel = (v) =>
-  v >= 85 ? ['var(--sage)', 'Buena'] : v >= 70 ? ['var(--ochre)', 'Regular'] : ['var(--err)', 'Baja'];
+  v >= 85 ? ['var(--sage)', 'Buena'] : v >= 70 ? ['var(--ember)', 'Regular'] : ['var(--fault)', 'Baja'];

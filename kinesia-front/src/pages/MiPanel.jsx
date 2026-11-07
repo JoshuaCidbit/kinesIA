@@ -8,9 +8,9 @@ import Perfil from './Perfil';
 
 // clase de color + texto según el estado de la carga
 const ESTADOS = {
-  cargando: ['c-ochre', 'Conectando...'],
+  cargando: ['c-ember', 'Conectando...'],
   ok: ['c-sage', 'Conectado'],
-  error: ['c-err', 'Sin conexión'],
+  error: ['c-fault', 'Sin conexión'],
 };
 
 export default function MiPanel({ toast }) {
@@ -50,11 +50,11 @@ export default function MiPanel({ toast }) {
           <b>{estado === 'ok' ? total : '—'}</b>
           <span>Sesiones registradas</span>
         </div>
-        <div className="card kpi" style={{ '--c': total > 0 ? nivel(promedio)[0] : 'var(--primary)' }}>
+        <div className="card kpi" style={{ '--c': total > 0 ? nivel(promedio)[0] : 'var(--root)' }}>
           <b>{estado === 'ok' ? `${promedio}%` : '—'}</b>
           <span>Precisión promedio</span>
         </div>
-        <div className="card kpi c-ochre">
+        <div className="card kpi c-ember">
           <h2>Plan calórico</h2>
           <button className="btn" onClick={() => setVerPlan(true)}>Ver plan</button>
         </div>
