@@ -66,7 +66,8 @@ exports.listarCoaches = async (req, res) => {
 exports.obtener = async (req, res) => {
   try {
     const usuario = await Usuario.findByPk(req.params.id, {
-      include: [{ model: Usuario, as: 'coach', attributes: ['id', 'nombre'] }]
+      // En modo demo (pg-mem) no se registra la asociación coach ↔ pacientes
+      include: Usuario.associations?.coach ? [{ model: Usuario, as: 'coach', attributes: ['id', 'nombre'] }] : [],
     });
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
     res.json(usuario);

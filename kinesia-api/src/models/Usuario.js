@@ -3,6 +3,10 @@ const { urlArchivo } = require('../services/storage.service');
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
+// En el modo demo local (pg-mem) se usan STRING + validador; en produccion
+// (PostgreSQL real / Azure) se mantiene el ENUM con su restriccion a nivel DB.
+const enMemoria = process.env.USE_PG_MEM === 'true';
+
 const Usuario = sequelize.define('Usuario', {
   nombre: { type: DataTypes.STRING, allowNull: false, validate: { notEmpty: { msg: 'El nombre es obligatorio' } } },
   email: {
@@ -10,12 +14,21 @@ const Usuario = sequelize.define('Usuario', {
     validate: { isEmail: { msg: 'El email no tiene un formato válido' } }
   },
   edad: { type: DataTypes.INTEGER, validate: { min: { args: [1], msg: 'Edad inválida' }, max: { args: [120], msg: 'Edad inválida' } } },
-  fotoUrl: { type: DataTypes.STRING },   // URL pública en Supabase Storage
+  fotoUrl: { type: DataTypes.STRING },   // URL pública en Azure Blob Storage
   fotoPath: { type: DataTypes.STRING },  // ruta interna en el bucket (para poder borrarla)
   rol: {
-    type: DataTypes.ENUM('paciente', 'coach', 'admin'),
+    type: enMemoria ? DataTypes.STRING(20) : DataTypes.ENUM('paciente', 'coach', 'admin'),
     allowNull: false,
-    defaultValue: 'paciente'
+    defaultValue: 'paciente',
+    ...(enMemoria && {
+      validate: {
+        esRol(value) {
+          if (!['paciente', 'coach', 'admin'].includes(value)) {
+            throw new Error('Rol inválido: debe ser paciente, coach o admin');
+          }
+        },
+      },
+    }),
   },
   coachId: { type: DataTypes.INTEGER, allowNull: true },   // solo aplica a pacientes
   password_hash: { type: DataTypes.STRING, allowNull: true }

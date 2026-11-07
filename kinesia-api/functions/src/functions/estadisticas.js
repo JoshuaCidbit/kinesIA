@@ -14,7 +14,7 @@ function getPool() {
       user: decodeURIComponent(u.username),
       password: decodeURIComponent(u.password),
       database: u.pathname.slice(1),
-      ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false },
+      ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false' },
       max: 2,
       idleTimeoutMillis: 10000
     });

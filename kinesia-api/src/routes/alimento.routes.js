@@ -1,17 +1,16 @@
 'use strict';
 const router = require('express').Router();
 const c = require('../controllers/alimento.controller');
-const { auth, rol, accesoPaciente } = require('../middlewares/auth');
+const { auth, rol } = require('../middlewares/auth');
 
+// El catálogo de alimentos es datos de referencia: lectura para cualquier
+// usuario autenticado. No es publico (auth a nivel de router).
 router.use(auth);
 
-// GET /api/alimentos - lectura para cualquier autenticado
+// GET /api/alimentos - lectura para cualquier autenticado (con o sin ?q=)
 router.get('/', c.listar);
 
-// GET /api/alimentos?q=... - filtro opcional
-router.get('/', auth, c.listar);
-
-// POST /api/alimentos - coach y admin (con protección de usuarioId)
+// POST /api/alimentos - coach y admin
 router.post('/', auth, rol('admin', 'coach'), c.crear);
 
 // PUT /api/alimentos/:id - coach y admin

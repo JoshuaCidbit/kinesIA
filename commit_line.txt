@@ -1,1 +1,0 @@
-git add -A && git commit -m "feat: add kinesia-front React app with TanStack Query, Express proxy for Azure Functions, and updated CORS configuration"

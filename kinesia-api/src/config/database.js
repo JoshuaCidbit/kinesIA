@@ -15,15 +15,18 @@ if (!databaseUrl) {
   throw new Error('Falta la variable de entorno DATABASE_URL');
 }
 
-// Azure Database for PostgreSQL exige SSL (DB_SSL=false solo para pruebas locales)
+// Azure Database for PostgreSQL exige SSL (DB_SSL=false solo para pruebas locales).
+// DB_SSL_REJECT_UNAUTHORIZED (default true) controla si se valida el certificado raíz
+// del servidor SSL; en Azure puede ser necesario false si la CA no está en el bundle.
 const usarSSL = process.env.DB_SSL !== 'false';
+const rejectUnauthorized = process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false';
 const dialectModule = usarMemoria ? require('./pg-mem') : pg;
 
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'postgres',
   dialectModule,
   logging: false,
-  dialectOptions: usarSSL ? { ssl: { require: true, rejectUnauthorized: false } } : {},
+  dialectOptions: usarSSL ? { ssl: { require: true, rejectUnauthorized } } : {},
   pool: { max: 5, min: 0, idle: 10000, acquire: 30000 }
 });
 

@@ -13,6 +13,7 @@ functions/local.settings.json.example
 *.sqlite
 
 # Build outputs (opcionales)
+dist/
 # kinesia-api-azure.zip  # Solo si se sube el paquete desplegado
 
 # Temp files

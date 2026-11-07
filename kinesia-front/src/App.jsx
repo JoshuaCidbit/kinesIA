@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Ico } from './components/ui';
 import { useHealth } from './lib/queries';
+import { resolverVista } from './lib/rutas';
 import { useAuth } from './contexts/AuthContext';
 import Dashboard from './pages/Dashboard';
 import Pacientes from './pages/Pacientes';
@@ -9,6 +10,7 @@ import Rutinas from './pages/Rutinas';
 import Login from './pages/Login';
 import MiPanel from './pages/MiPanel';
 import MiCuenta from './components/MiCuenta';   // NUEVO
+import RutaGuard from './components/RutaGuard';
 
 // Función go derivada del rol (exportada para uso en páginas)
 export const go = (x) => { location.hash = x; scrollTo(0, 0); };
@@ -19,7 +21,6 @@ const NAV_STAFF = [
   ['rutinas', 'r', 'Rutinas'],
 ];
 const NAV_PACIENTE = [['mi-panel', 'u', 'Mi panel']];
-const VISTAS_STAFF = ['dashboard', 'pacientes', 'rutinas'];
 const leerHash = () => location.hash.slice(1);
 
 export default function App() {
@@ -49,9 +50,11 @@ export default function App() {
   if (!usuario) return <Login />
 
   const esPaciente = usuario.rol === 'paciente';
-let vista = esPaciente ? 'mi-panel' : hash;
-  if (!esPaciente && !VISTAS_STAFF.includes(vista) && !vista.startsWith('paciente-')) vista = 'dashboard';
-  const seccion = vista.startsWith('paciente-') ? 'pacientes' : vista;
+  // Vista resuelta con el guard por rol: si la vista no esta permitida para el
+  // rol, cae al home del rol (paciente -> mi-panel; staff -> dashboard).
+  const vistaSolicitada = esPaciente ? 'mi-panel' : hash;
+  let vista = resolverVista(vistaSolicitada, usuario.rol);
+  const seccion = vistaSolicitada.startsWith('paciente-') ? 'pacientes' : vista;
   const nav = esPaciente ? NAV_PACIENTE : NAV_STAFF;
 
   const estado = health.isSuccess
@@ -73,11 +76,13 @@ let vista = esPaciente ? 'mi-panel' : hash;
         <button className="btn" onClick={() => setCuenta(true)}>Perfil</button>
       </nav>
       <main>
-        {vista === 'mi-panel' && <MiPanel toast={setAviso} />}
-        {vista === 'dashboard' && <Dashboard go={go} />}
-        {vista === 'pacientes' && <Pacientes go={go} toast={setAviso} />}
-        {vista.startsWith('paciente-') && <Perfil id={Number(vista.split('-')[1])} go={go} toast={setAviso} />}
-        {vista === 'rutinas' && <Rutinas toast={setAviso} />}
+        <RutaGuard rol={usuario?.rol} vista={vista}>
+          {vista === 'mi-panel' && <MiPanel toast={setAviso} />}
+          {vista === 'dashboard' && <Dashboard go={go} />}
+          {vista === 'pacientes' && <Pacientes go={go} toast={setAviso} />}
+          {vistaSolicitada.startsWith('paciente-') && <Perfil id={Number(vistaSolicitada.split('-')[1])} go={go} toast={setAviso} />}
+          {vista === 'rutinas' && <Rutinas toast={setAviso} />}
+        </RutaGuard>
       </main>
       {aviso && <div className="toast" role="status">{aviso}</div>}
       {cuenta && <MiCuenta toast={setAviso} onClose={() => setCuenta(false)} onLogout={cerrarSesion} />}

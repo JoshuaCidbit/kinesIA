@@ -1,7 +1,18 @@
 const jwt = require('jsonwebtoken');
 
-if (!process.env.JWT_SECRET) {
-  throw new Error('Falta JWT_SECRET en las variables de entorno');
+// El secreto de ejemplo NO sirve: la API debe arrancar solo con un JWT_SECRET
+// propio de al menos 32 caracteres (o con el valor de desarrollo validado en CI).
+const EJEMPLO = 'cambio_este_secreto_por_uno_propio';
+const MIN_LONGITUD = 32;
+if (
+  !process.env.JWT_SECRET ||
+  process.env.JWT_SECRET === EJEMPLO ||
+  String(process.env.JWT_SECRET).length < MIN_LONGITUD
+) {
+  throw new Error(
+    `JWT_SECRET inválido: debe definirse un secreto propio de al menos ${MIN_LONGITUD} caracteres ` +
+      '(ej. node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))")'
+  );
 }
 const SECRET = process.env.JWT_SECRET;
 const EXPIRA = process.env.JWT_EXPIRES_IN || '8h';

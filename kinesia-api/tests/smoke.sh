@@ -4,8 +4,6 @@
 BASE_URL="https://kinesia-api-gfbna7fab0gxdjc7.mexicocentral-01.azurewebsites.net"
 # SERVERLESS_URL="${SERVERLESS_URL:-}"
 SERVERLESS_URL="https://kinesia-func-bnb5fweeatc4awds.mexicocentral-01.azurewebsites.net"
-# FOTO="${FOTO:-}"
-FOTO="./LOShamster.jpeg" 
 # bash tests/smoke.sh
 
 call() {
@@ -33,10 +31,6 @@ call GET  /api/sesiones/$SID
 call GET  /api/sesiones/usuario/$UID_
 call PUT  /api/sesiones/$SID '{"repeticiones":15}'
 
-if [ -n "$FOTO" ]; then
-  echo -e "\n▶ POST /api/usuarios/$UID_/foto (storage)"
-  curl -s -X POST "$BASE_URL/api/usuarios/$UID_/foto" -F "foto=@$FOTO"; echo
-fi
 
 echo -e "\n--- Casos de error esperados ---"
 call POST /api/sesiones '{"usuarioId":99999,"rutinaId":1}'          # 404

@@ -8,6 +8,7 @@
 process.env.USE_PG_MEM = process.env.USE_PG_MEM || 'true';
 process.env.DB_SSL = 'false';
 process.env.CORS_ORIGIN = 'http://localhost:5173';
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-de-prueba-0123456789';
 
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
