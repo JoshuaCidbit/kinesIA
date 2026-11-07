@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Avatar, Mensaje, Modal, Rol } from '../components/ui';
 import FormUsuario from '../components/FormUsuario';
 import { api } from '../lib/api';
+import { puedeEliminar } from '../lib/permisos';
 
 export default function Pacientes({ go, toast }) {
   const { usuario } = useAuth();
@@ -12,6 +13,7 @@ export default function Pacientes({ go, toast }) {
   const [error, setError] = useState(null);
   const [eliminando, setEliminando] = useState(null);
   const esAdmin = usuario?.rol === 'admin';
+  const mostrarAcciones = esAdmin || usuario?.rol === 'coach';
 
   const recargar = useCallback(async () => {
     try {
@@ -101,7 +103,7 @@ export default function Pacientes({ go, toast }) {
                 <tr>
                   <th>Nombre</th><th>Email</th><th>Rol</th>
                   {esAdmin && <th>Coach</th>}
-                  {esAdmin && <th>Acciones</th>}
+                  {mostrarAcciones && <th>Acciones</th>}
                 </tr>
               </thead>
               <tbody>
@@ -120,11 +122,11 @@ export default function Pacientes({ go, toast }) {
                         ) : '—'}
                       </td>
                     )}
-                    {esAdmin && u.rol !== 'admin' && Number(u.id) !== usuario?.id && (
-                      <td className="coach-cell">
+                    <td className="coach-cell">
+                      {puedeEliminar({ actor: usuario, target: u }) && (
                         <button className="btn" onClick={() => pedirEliminar(u)}>Eliminar</button>
-                      </td>
-                    )}
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -148,6 +150,11 @@ export default function Pacientes({ go, toast }) {
             Vas a eliminar a <b>{eliminando.nombre}</b> ({eliminando.email}).
           </p>
           <p className="muted">Esta acción no se puede deshacer.</p>
+          {usuario?.rol === 'coach' && (
+            <p className="muted">
+              Al eliminar a un paciente se borran sus sesiones de terapia y su foto, afectando su historial clínico.
+            </p>
+          )}
           <div className="actions">
             <button className="btn" onClick={() => setEliminando(null)}>Cancelar</button>
             <button className="btn pri" onClick={confirmarEliminar}>Eliminar</button>

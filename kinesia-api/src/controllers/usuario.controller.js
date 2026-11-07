@@ -92,7 +92,8 @@ exports.actualizar = async (req, res) => {
 // Reglas:
 //   - Self-eliminacion: 400 (tambien aplica a coach/admin).
 //   - Admin sobre admin: 403 (solo existe un unico admin y no se elimina a el mismo).
-//   - Coach solo opera sobre sus propios pacientes (middleware accesoPaciente).
+//   - Coach solo opera sobre sus propios pacientes (middleware accesoPaciente +
+//     defensa en el controlador como segunda capa).
 exports.eliminar = async (req, res) => {
   try {
     if (Number(req.params.id) === req.usuario.id) {
@@ -102,6 +103,12 @@ exports.eliminar = async (req, res) => {
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
     if (usuario.rol === 'admin') {
       return res.status(403).json({ error: 'No se puede eliminar a un administrador' });
+    }
+    // Defensa en profundidad: el middleware accesoPaciente ya restringe a un coach
+    // a sus propios pacientes, pero se re-verifica aca para no depender solo de la cadena.
+    if (req.usuario.rol === 'coach' &&
+      (usuario.rol !== 'paciente' || Number(usuario.coachId) !== Number(req.usuario.id))) {
+      return res.status(403).json({ error: 'No tienes permisos sobre este usuario' });
     }
     const fotoPath = usuario.fotoPath;
     await usuario.destroy(); // sesiones en cascada; pacientes de un coach borrado quedan con coachId NULL

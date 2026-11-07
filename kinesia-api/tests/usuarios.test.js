@@ -34,7 +34,9 @@ let tokenAdmin;
 let tokenCoach;
 let adminId;
 let coachId;
+let coach2Id;
 let pacienteId;
+let pacienteSinCoachId;
 
 before(async () => {
   await sequelize.sync({ force: true });
@@ -59,6 +61,13 @@ before(async () => {
   coachId = coach.id;
   tokenCoach = generarToken(coach);
 
+  const coach2 = await Usuario.create({
+    nombre: 'Coach Usuarios 2',
+    email: 'coach2.usuarios@test.com',
+    rol: 'coach',
+  });
+  coach2Id = coach2.id;
+
   const paciente = await Usuario.create({
     nombre: 'Paciente Usuarios',
     email: 'paciente.usuarios@test.com',
@@ -66,6 +75,13 @@ before(async () => {
     coachId,
   });
   pacienteId = paciente.id;
+
+  const pacienteSinCoach = await Usuario.create({
+    nombre: 'Paciente Sin Coach',
+    email: 'sin.coach.usuarios@test.com',
+    rol: 'paciente',
+  });
+  pacienteSinCoachId = pacienteSinCoach.id;
 });
 
 after(async () => {
@@ -103,15 +119,20 @@ test('usuarios: el admin puede eliminar a un usuario que no es admin', async () 
   assert.equal(resGet.status, 404);
 });
 
-// En PostgreSQL real el indice unico parcial `usuarios_unico_admin` impide
-// tener dos admins, asi que este escenario (admin eliminando a otro admin)
-// solo aplica en el modo demo con pg-mem (USE_PG_MEM=true).
-test('usuarios: el admin no puede eliminar a otro admin', { skip: !enMemoria }, async () => {
-  const otroAdmin = await Usuario.create({
-    nombre: 'Otro Admin',
-    email: 'otro.admin.usuarios@test.com',
-    rol: 'admin',
-  });
+test('usuarios: el admin no puede eliminar a otro admin', async (t) => {
+  // En PostgreSQL real el indice unico parcial `usuarios_unico_admin` impide tener
+  // dos admins; si la creacion del segundo falla, el escenario no aplica y se salta.
+  let otroAdmin;
+  try {
+    otroAdmin = await Usuario.create({
+      nombre: 'Otro Admin',
+      email: 'otro.admin.usuarios@test.com',
+      rol: 'admin',
+    });
+  } catch {
+    t.skip('PostgreSQL real: ya existe el unico admin (indice unico parcial)');
+    return;
+  }
   const res = await api('DELETE', `/api/usuarios/${otroAdmin.id}`, undefined, tokenAdmin);
   assert.equal(res.status, 403);
 });
@@ -139,6 +160,58 @@ test('usuarios: no se puede promover a un usuario a admin cuando ya existe uno',
 test('usuarios: el admin no puede demotarse a si mismo', async () => {
   const res = await api('PUT', `/api/usuarios/${adminId}/rol`, { rol: 'paciente' }, tokenAdmin);
   assert.equal(res.status, 400);
+});
+
+test('usuarios: el coach puede eliminar a su propio paciente', async () => {
+  const victima = await Usuario.create({
+    nombre: 'Paciente Coach Borrado',
+    email: 'coach.borrar.paciente@test.com',
+    rol: 'paciente',
+    coachId,
+  });
+  const res = await api('DELETE', `/api/usuarios/${victima.id}`, undefined, tokenCoach);
+  assert.equal(res.status, 200);
+
+  const borrado = await Usuario.findByPk(victima.id);
+  assert.equal(borrado, null, 'El paciente debe estar eliminado');
+});
+
+test('usuarios: el coach no puede eliminarse a si mismo', async () => {
+  const res = await api('DELETE', `/api/usuarios/${coachId}`, undefined, tokenCoach);
+  assert.equal(res.status, 403);
+
+  const coach = await Usuario.findByPk(coachId);
+  assert.ok(coach, 'El coach debe seguir existiendo');
+});
+
+test('usuarios: el coach no puede eliminar a otro coach', async () => {
+  const res = await api('DELETE', `/api/usuarios/${coach2Id}`, undefined, tokenCoach);
+  assert.equal(res.status, 403);
+
+  const coach = await Usuario.findByPk(coach2Id);
+  assert.ok(coach, 'El otro coach debe seguir existiendo');
+});
+
+test('usuarios: el coach no puede eliminar un paciente que no le pertenece', async () => {
+  const extrano = await Usuario.create({
+    nombre: 'Paciente Ajeno',
+    email: 'ajeno.paciente.usuarios@test.com',
+    rol: 'paciente',
+    coachId: coach2Id,
+  });
+  const res = await api('DELETE', `/api/usuarios/${extrano.id}`, undefined, tokenCoach);
+  assert.equal(res.status, 403);
+
+  const borrado = await Usuario.findByPk(extrano.id);
+  assert.ok(borrado, 'El paciente ajeno debe seguir existiendo');
+});
+
+test('usuarios: el coach no puede eliminar un paciente sin coach asignado', async () => {
+  const res = await api('DELETE', `/api/usuarios/${pacienteSinCoachId}`, undefined, tokenCoach);
+  assert.equal(res.status, 403);
+
+  const borrado = await Usuario.findByPk(pacienteSinCoachId);
+  assert.ok(borrado, 'El paciente sin coach debe seguir existiendo');
 });
 
 test('usuarios: al eliminar un coach sus pacientes quedan sin coach', async () => {
