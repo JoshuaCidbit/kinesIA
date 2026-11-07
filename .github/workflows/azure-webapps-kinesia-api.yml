@@ -61,7 +61,7 @@ jobs:
           DB_SYNC: 'true'
           USE_PG_MEM: 'false'
           NODE_ENV: 'test'
-          JWT_SECRET: test-secret
+          JWT_SECRET: test-jwt-secret-ci-0123456789abcdef0123456789
         run: npm test
 
       - name: Remove development dependencies
