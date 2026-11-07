@@ -116,14 +116,13 @@ export default function FormUsuario({ esAdmin, toast, onClose, onCreated }) {
               <option value="">Sin coach</option>
               {/* Se poblaría con la lista real de coaches desde el parent */}
             </select>
+            <small className="muted">Así el paciente empezará a recibir sus sesiones.</small>
           </div>
         )}
 
-        {loading && <p>Guardando...</p>}
-
         <div className="actions">
           <button type="button" className="btn" onClick={onClose}>Cancelar</button>
-          <button className="btn pri" type="submit" disabled={loading}>Crear usuario</button>
+          <button type="submit" className="btn pri" disabled={loading}>{loading ? 'Creando...' : 'Crear usuario'}</button>
         </div>
       </form>
     </Modal>

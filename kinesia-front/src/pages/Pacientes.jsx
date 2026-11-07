@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Avatar, Mensaje } from '../components/ui';
+import { Avatar, Mensaje, Rol } from '../components/ui';
 import FormUsuario from '../components/FormUsuario';
 import { api } from '../lib/api';
 
@@ -46,24 +46,27 @@ export default function Pacientes({ go, toast }) {
 
   return (
     <>
-      <h1>{esAdmin ? 'Usuarios' : 'Pacientes'}</h1>
-      <p className="sub">
-        {esAdmin ? 'Ves todos los usuarios y asignas coaches.' : 'Ves solo tus pacientes asignados.'}
-      </p>
-
-      <div className="bar">
-        <button className="btn pri" onClick={() => setCreando(true)}>
-          {esAdmin ? 'Registrar nuevo usuario' : 'Registrar nuevo paciente'}
-        </button>
+      <div className="topbar">
+        <div>
+          <h1>{esAdmin ? 'Usuarios' : 'Pacientes'}</h1>
+          <p className="sub">
+            {esAdmin ? 'Ves todos los usuarios y asignas coaches.' : 'Ves solo tus pacientes asignados.'}
+          </p>
+        </div>
+        <div className="bar">
+          <button className="btn pri" onClick={() => setCreando(true)}>
+            {esAdmin ? 'Registrar nuevo usuario' : 'Registrar nuevo paciente'}
+          </button>
+        </div>
       </div>
 
-      <div className="grid2">
+      <div className="grid3">
         <div className="card kpi">
           <b>{pacientes.length}</b>
           <span>Total de pacientes</span>
         </div>
         {esAdmin && (
-          <div className="card kpi">
+          <div className="card kpi quiet">
             <b>{lista.length - pacientes.length}</b>
             <span>Coaches y admins</span>
           </div>
@@ -74,35 +77,38 @@ export default function Pacientes({ go, toast }) {
       {!error && lista.length === 0 && <Mensaje titulo="Sin usuarios" texto="Aún no hay registros." />}
 
       {lista.length > 0 && (
-        <div className="card scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th><th>Email</th><th>Rol</th>
-                {esAdmin && <th>Coach</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {lista.map((u) => (
-                <tr key={u.id}>
-                  <td><Avatar usuario={u} /> {u.nombre}</td>
-                  <td>{u.email}</td>
-                  <td>{u.rol}</td>
-                  {esAdmin && (
-                    <td>
-                      {u.rol === 'paciente' ? (
-                        <select className="input" value={u.coachId ?? ''} onChange={(e) => asignar(u.id, e.target.value)}>
-                          <option value="">Sin coach</option>
-                          {coaches.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                        </select>
-                      ) : '—'}
-                    </td>
-                  )}
+        <>
+          <h2 className="seccion">{esAdmin ? 'Directorio' : 'Mis pacientes'}</h2>
+          <div className="card scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th><th>Email</th><th>Rol</th>
+                  {esAdmin && <th>Coach</th>}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {lista.map((u) => (
+                  <tr key={u.id}>
+                    <td><Avatar usuario={u} /> {u.nombre}</td>
+                    <td>{u.email}</td>
+                    <td><Rol v={u.rol} /></td>
+                    {esAdmin && (
+                      <td className="coach-cell">
+                        {u.rol === 'paciente' ? (
+                          <select className="input" value={u.coachId ?? ''} onChange={(e) => asignar(u.id, e.target.value)}>
+                            <option value="">Sin coach</option>
+                            {coaches.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                          </select>
+                        ) : '—'}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {creando && (

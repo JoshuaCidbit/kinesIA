@@ -26,6 +26,13 @@ export function Badge({ v }) {
   return <span className="badge" style={{ '--c': c }}>{Math.round(v)}% · {t}</span>;
 }
 
+// Rol con color semántico: paciente (verde), coach (azul), admin (rojo terracota)
+export function Rol({ r }) {
+  const color = r === 'admin' ? 'var(--admin)' : r === 'coach' ? 'var(--coach)' : 'var(--patient)';
+  const label = r === 'admin' ? 'Admin' : r === 'coach' ? 'Coach' : 'Paciente';
+  return <span className="badge" style={{ '--c': color }}>{label}</span>;
+}
+
 export function Gauge({ ang, size = 140 }) {
   const g = Math.max(0, Math.min(Number(ang) || 0, 179.9));
   const a = (g * Math.PI) / 180;
