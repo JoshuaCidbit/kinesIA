@@ -11,8 +11,8 @@
     "seed:alimentos": "node scripts/seed-alimentos.js",
     "crear-admin": "node scripts/crear-admin.js",
     "test:ag": "node --test tests/ag.test.js",
-    "test": "node --test tests/*.test.js",
-    "test:api": "node --test tests/api-ag.test.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js",
+    "test:api": "node --test --test-concurrency=1 tests/api-ag.test.js",
     "smoke:ag": "node tests/smoke-ag.js"
   },
   "engines": {
