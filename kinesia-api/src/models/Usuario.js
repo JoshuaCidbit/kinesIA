@@ -36,7 +36,14 @@ const Usuario = sequelize.define('Usuario', {
   tableName: 'usuarios',
   // password_hash NUNCA se trae por defecto. Solo con Usuario.scope('conPassword')
   defaultScope: { attributes: { exclude: ['password_hash'] } },
-  scopes: { conPassword: {} }
+  scopes: { conPassword: {} },
+  // Un unico admin maximo: indice unico parcial (solo filas con rol='admin').
+  // En modo demo (pg-mem) no se registra porque el motor no lo soporta.
+  ...( !enMemoria && {
+    indexes: [
+      { unique: true, fields: ['rol'], where: { rol: 'admin' }, name: 'usuarios_unico_admin' },
+    ],
+  } ),
 });
 
 // Definir toJSON en el prototipo para agregar firma a fotoUrl cuando hay fotoPath

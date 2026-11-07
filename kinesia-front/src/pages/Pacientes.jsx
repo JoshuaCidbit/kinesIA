@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Avatar, Mensaje, Rol } from '../components/ui';
+import { Avatar, Mensaje, Modal, Rol } from '../components/ui';
 import FormUsuario from '../components/FormUsuario';
 import { api } from '../lib/api';
 
@@ -10,6 +10,7 @@ export default function Pacientes({ go, toast }) {
   const [lista, setLista] = useState([]);
   const [coaches, setCoaches] = useState([]);
   const [error, setError] = useState(null);
+  const [eliminando, setEliminando] = useState(null);
   const esAdmin = usuario?.rol === 'admin';
 
   const recargar = useCallback(async () => {
@@ -19,6 +20,21 @@ export default function Pacientes({ go, toast }) {
       setError(null);
     } catch (e) { setError(e.message || 'Error cargando usuarios'); }
   }, []);
+
+  const pedirEliminar = (u) => setEliminando(u);
+
+  const confirmarEliminar = async () => {
+    if (!eliminando) return;
+    try {
+      await api(`/api/usuarios/${eliminando.id}`, { method: 'DELETE' });
+      toast?.('Usuario eliminado correctamente');
+      setEliminando(null);
+      recargar();
+    } catch (e) {
+      toast?.(e.message || 'No se pudo eliminar');
+      setEliminando(null);
+    }
+  };
 
   useEffect(() => {
     recargar();
@@ -85,6 +101,7 @@ export default function Pacientes({ go, toast }) {
                 <tr>
                   <th>Nombre</th><th>Email</th><th>Rol</th>
                   {esAdmin && <th>Coach</th>}
+                  {esAdmin && <th>Acciones</th>}
                 </tr>
               </thead>
               <tbody>
@@ -103,6 +120,11 @@ export default function Pacientes({ go, toast }) {
                         ) : '—'}
                       </td>
                     )}
+                    {esAdmin && u.rol !== 'admin' && Number(u.id) !== usuario?.id && (
+                      <td className="coach-cell">
+                        <button className="btn" onClick={() => pedirEliminar(u)}>Eliminar</button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -118,6 +140,19 @@ export default function Pacientes({ go, toast }) {
           onClose={() => setCreando(false)}
           onCreated={recargar}
         />
+      )}
+
+      {eliminando && (
+        <Modal titulo="Eliminar usuario" onClose={() => setEliminando(null)}>
+          <p>
+            Vas a eliminar a <b>{eliminando.nombre}</b> ({eliminando.email}).
+          </p>
+          <p className="muted">Esta acción no se puede deshacer.</p>
+          <div className="actions">
+            <button className="btn" onClick={() => setEliminando(null)}>Cancelar</button>
+            <button className="btn pri" onClick={confirmarEliminar}>Eliminar</button>
+          </div>
+        </Modal>
       )}
     </>
   );

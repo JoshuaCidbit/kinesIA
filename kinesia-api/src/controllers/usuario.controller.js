@@ -23,6 +23,10 @@ exports.crear = async (req, res) => {
     // Solo un admin puede crear coaches/admins; cualquier otro caso crea pacientes
     const rolNuevo = esAdmin && ROLES.includes(req.body.rol) ? req.body.rol : 'paciente';
     // Nota: el registro público ignora rol del body; solo admins pueden fijar rol.
+    // Limite: solo existe un unico administrador; no se puede promover a otro.
+    if (rolNuevo === 'admin' && (await Usuario.count({ where: { rol: 'admin' } })) > 0) {
+      return res.status(409).json({ error: 'Ya existe un único administrador. No se puede crear otro.' });
+    }
 
     let coachId = null;
     if (rolNuevo === 'paciente') {
@@ -85,6 +89,10 @@ exports.actualizar = async (req, res) => {
 };
 
 // DELETE /api/usuarios/:id   (coach: sus pacientes; admin: cualquiera menos él mismo)
+// Reglas:
+//   - Self-eliminacion: 400 (tambien aplica a coach/admin).
+//   - Admin sobre admin: 403 (solo existe un unico admin y no se elimina a el mismo).
+//   - Coach solo opera sobre sus propios pacientes (middleware accesoPaciente).
 exports.eliminar = async (req, res) => {
   try {
     if (Number(req.params.id) === req.usuario.id) {
@@ -92,6 +100,9 @@ exports.eliminar = async (req, res) => {
     }
     const usuario = await Usuario.findByPk(req.params.id);
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (usuario.rol === 'admin') {
+      return res.status(403).json({ error: 'No se puede eliminar a un administrador' });
+    }
     const fotoPath = usuario.fotoPath;
     await usuario.destroy(); // sesiones en cascada; pacientes de un coach borrado quedan con coachId NULL
     await eliminarArchivo(fotoPath);
@@ -174,6 +185,10 @@ exports.cambiarRol = async (req, res) => {
     const usuario = await Usuario.findByPk(req.params.id);
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
 
+    // Limite: solo existe un unico administrador; no se puede promover a otro.
+    if (rol === 'admin' && (await Usuario.count({ where: { rol: 'admin' } })) > 0) {
+      return res.status(409).json({ error: 'Ya existe un único administrador. No se puede asignar más admins.' });
+    }
     if (usuario.rol === 'coach' && rol !== 'coach') {
       await Usuario.update({ coachId: null }, { where: { coachId: usuario.id } }); // sus pacientes quedan sin coach
     }
