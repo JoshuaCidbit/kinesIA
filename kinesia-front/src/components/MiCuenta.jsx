@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Modal } from './ui';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { api } from '../lib/api';
 
 export default function MiCuenta({ onClose, onLogout, toast }) {
   const { usuario } = useAuth();
+  const { tema, toggleTema } = useTheme();
   const [cambiando, setCambiando] = useState(false);
   const [actual, setActual] = useState('');
   const [nueva, setNueva] = useState('');
@@ -60,6 +62,13 @@ export default function MiCuenta({ onClose, onLogout, toast }) {
           </div>
         </form>
       )}
+
+      <div className="tema">
+        <span className="muted">Tema</span>
+        <button type="button" className="btn" onClick={toggleTema} aria-pressed={tema === 'dark'}>
+          {tema === 'dark' ? '☀️ Claro' : '🌙 Oscuro'}
+        </button>
+      </div>
     </Modal>
   );
 }
