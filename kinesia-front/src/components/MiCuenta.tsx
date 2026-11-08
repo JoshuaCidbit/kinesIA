@@ -1,10 +1,16 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Modal } from './ui';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { api, usuarios } from '../lib/api';
 
-export default function MiCuenta({ onClose, onLogout, toast }) {
+interface MiCuentaProps {
+  onClose: () => void;
+  onLogout: () => void;
+  toast?: (msg: string) => void;
+}
+
+export default function MiCuenta({ onClose, onLogout, toast }: MiCuentaProps) {
   const { usuario } = useAuth();
   const { tema, toggleTema } = useTheme();
   const [cambiando, setCambiando] = useState(false);
@@ -12,15 +18,20 @@ export default function MiCuenta({ onClose, onLogout, toast }) {
   const [nueva, setNueva] = useState('');
   const [confirmar, setConfirmar] = useState('');
   const [guardando, setGuardando] = useState(false);
-  const inputFoto = useRef(null);
+  const inputFoto = useRef<HTMLInputElement>(null);
+  const uid = useId();
 
-  const subirFoto = async (e) => {
+  if (!usuario) return null;
+
+  const subirFoto = async (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     try {
       await usuarios.subirFoto(usuario.id, f);
       toast?.('Foto actualizada');
-    } catch (err) { toast?.(err.message); }
+    } catch (err) {
+      toast?.(err instanceof Error ? err.message : 'No se pudo subir la foto');
+    }
     e.target.value = '';
   };
 
@@ -29,7 +40,7 @@ export default function MiCuenta({ onClose, onLogout, toast }) {
     setActual(''); setNueva(''); setConfirmar('');
   };
 
-  const cambiar = async (e) => {
+  const cambiar = async (e: FormEvent) => {
     e.preventDefault();
     if (nueva.length < 8) return toast?.('La nueva contraseña debe tener al menos 8 caracteres');
     if (nueva !== confirmar) return toast?.('Las contraseñas no coinciden');
@@ -38,8 +49,11 @@ export default function MiCuenta({ onClose, onLogout, toast }) {
       await api('/api/usuarios/me/password', { method: 'PUT', body: { actual, nueva } });
       toast?.('Contraseña actualizada');
       cancelar();
-    } catch (err) { toast?.(err.message); }
-    finally { setGuardando(false); }
+    } catch (err) {
+      toast?.(err instanceof Error ? err.message : 'No se pudo actualizar la contraseña');
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
@@ -49,7 +63,7 @@ export default function MiCuenta({ onClose, onLogout, toast }) {
 
       {!cambiando ? (
         <div className="actions">
-          <input ref={inputFoto} type="file" accept="image/*" hidden onChange={subirFoto} />
+          <input ref={inputFoto} id={`${uid}-foto`} type="file" accept="image/*" hidden onChange={subirFoto} />
           <button type="button" className="btn" onClick={() => inputFoto.current?.click()}>Cambiar foto</button>
           <button type="button" className="btn" onClick={() => setCambiando(true)}>Cambiar contraseña</button>
           <button type="button" className="btn dng" onClick={onLogout}>Cerrar sesión</button>
@@ -58,16 +72,16 @@ export default function MiCuenta({ onClose, onLogout, toast }) {
         <form onSubmit={cambiar}>
           <h3>Cambiar contraseña</h3>
           <div className="form-group">
-            <label>Contraseña actual</label>
-            <input className="input" type="password" required value={actual} onChange={(e) => setActual(e.target.value)} />
+            <label htmlFor={`${uid}-actual`}>Contraseña actual</label>
+            <input id={`${uid}-actual`} className="input" type="password" required value={actual} onChange={(e) => setActual(e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Nueva contraseña</label>
-            <input className="input" type="password" required minLength={8} value={nueva} onChange={(e) => setNueva(e.target.value)} />
+            <label htmlFor={`${uid}-nueva`}>Nueva contraseña</label>
+            <input id={`${uid}-nueva`} className="input" type="password" required minLength={8} value={nueva} onChange={(e) => setNueva(e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Confirmar nueva contraseña</label>
-            <input className="input" type="password" required minLength={8} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
+            <label htmlFor={`${uid}-confirmar`}>Confirmar nueva contraseña</label>
+            <input id={`${uid}-confirmar`} className="input" type="password" required minLength={8} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
           </div>
           <div className="actions">
             <button type="button" className="btn" onClick={cancelar}>Cancelar</button>

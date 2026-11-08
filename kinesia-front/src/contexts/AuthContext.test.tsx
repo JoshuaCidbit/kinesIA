@@ -40,7 +40,7 @@ describe('AuthContext', () => {
     vi.mocked(api).mockResolvedValue({
       token: 'token-valido',
       usuario: { id: 1, nombre: 'Ana', email: 'ana@test.com', rol: 'paciente' },
-    });
+    } as never);
 
     renderAuth();
     const user = userEvent.setup();
@@ -57,7 +57,7 @@ describe('AuthContext', () => {
       nombre: 'Ana',
       email: 'ana@test.com',
       rol: 'paciente',
-    });
+    } as never);
 
     renderAuth();
     const user = userEvent.setup();

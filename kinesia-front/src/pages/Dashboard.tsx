@@ -1,22 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../lib/api';
 import { nivel } from '../lib/utils';
 import { Leyenda } from '../components/ui';
+import type { Sesion } from '../lib/types';
 
-export default function Dashboard({ go }) {
+export default function Dashboard({ go }: { go: (v: string) => void }) {
   const { usuario } = useAuth();
-  const [estadisticas, setEstadisticas] = useState(null);
+  const [estadisticas, setEstadisticas] = useState<{ total: number; promedio: number } | null>(null);
   const [error, setError] = useState(false);
 
   // Solo coach y admin ven el dashboard
-  const esPaciente = usuario.rol === 'paciente';
+  const esPaciente = usuario?.rol === 'paciente';
 
   useEffect(() => {
     if (esPaciente) return;
     const cargarEstadisticas = async () => {
       try {
-        const sesiones = await api('/api/sesiones');
+        const sesiones = await api<Sesion[]>('/api/sesiones');
         const total = sesiones.length;
         const suma = sesiones.reduce((sum, s) => sum + (s.precisionPromedio || 0), 0);
         const promedio = total > 0 ? Math.round((suma / total) * 10) / 10 : 0;
@@ -27,19 +28,19 @@ export default function Dashboard({ go }) {
       }
     };
     cargarEstadisticas();
-  }, [usuario.id, esPaciente]);
+  }, [usuario?.id, esPaciente]);
 
   if (esPaciente) return null;
 
   const total = estadisticas?.total ?? 0;
   const promedio = estadisticas?.promedio ?? 0;
   const colorPrecision = total > 0 ? nivel(promedio)[0] : 'var(--root)';
-  const esAdmin = usuario.rol === 'admin';
+  const esAdmin = usuario?.rol === 'admin';
 
   return (
     <>
       <h1>Resumen</h1>
-      <p className="sub">Bienvenido/a, {usuario.nombre}</p>
+      <p className="sub">Bienvenido/a, {usuario?.nombre}</p>
 
       {error && <p className="msg-err">No se pudieron cargar las estadísticas.</p>}
 
@@ -48,7 +49,7 @@ export default function Dashboard({ go }) {
           <b>{total}</b>
           <span>Sesiones totales</span>
         </div>
-        <div className="card kpi" style={{ '--c': colorPrecision }}>
+        <div className="card kpi" style={{ '--c': colorPrecision } as CSSProperties}>
           <b>{promedio}%</b>
           <span>Precisión promedio</span>
         </div>

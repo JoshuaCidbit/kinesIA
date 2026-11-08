@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { Modal } from './ui';
 import {
   useAlimentos,
@@ -7,6 +7,7 @@ import {
   useResultadoAG,
 } from '../lib/queries';
 import { fmtFecha } from '../lib/utils';
+import type { AgResultado, Usuario } from '../lib/types';
 
 // Selección inicial equilibrada para que la demo funcione con un clic.
 const PRESELECCION = [
@@ -20,12 +21,12 @@ const OBJETIVOS = [
   { valor: 'bulk', titulo: 'Ganar músculo', detalle: 'Superávit · 40 kcal/kg' },
 ];
 
-const medida = (a) =>
+const medida = (a: { porciones: number; porcionBase?: number | null; unidad?: string | null }) =>
   a.porcionBase
     ? `${a.porciones} × ${a.porcionBase} ${a.unidad ?? ''}`.trim()
     : `${a.porciones} porción(es)`;
 
-function ResultadoPlan({ plan }) {
+function ResultadoPlan({ plan }: { plan: AgResultado }) {
   return (
     <div className="plan-res">
       <div className="plan-res-head">
@@ -37,11 +38,11 @@ function ResultadoPlan({ plan }) {
 
       <div className="plan-kpis">
         <div>
-          <b>{Math.round(plan.caloriasObjetivo)}</b>
+          <b>{Math.round(plan.caloriasObjetivo ?? 0)}</b>
           <span>kcal objetivo</span>
         </div>
         <div>
-          <b>{Math.round(plan.totalDiario)}</b>
+          <b>{Math.round(plan.totalDiario ?? 0)}</b>
           <span>kcal del plan</span>
         </div>
         <div>
@@ -50,7 +51,7 @@ function ResultadoPlan({ plan }) {
         </div>
         <div>
           <b>{plan.objetivo === 'cut' ? 'Déficit' : 'Superávit'}</b>
-          <span>{Number(plan.peso).toFixed(1)} kg</span>
+          <span>{Number(plan.peso ?? 0).toFixed(1)} kg</span>
         </div>
       </div>
 
@@ -75,29 +76,35 @@ function ResultadoPlan({ plan }) {
   );
 }
 
-export default function PlanCalorico({ usuario, onClose, toast }) {
+interface PlanCaloricoProps {
+  usuario: Usuario;
+  onClose: () => void;
+  toast?: (msg: string) => void;
+}
+
+export default function PlanCalorico({ usuario, onClose, toast }: PlanCaloricoProps) {
   const catalogo = useAlimentos();
   const generar = useGenerarPlanCalorico(usuario.id);
   const historial = useHistorialAG(usuario.id);
 
   const [objetivo, setObjetivo] = useState('cut');
   const [peso, setPeso] = useState('70');
-  const [seleccion, setSeleccion] = useState(null); // null = preselección
+  const [seleccion, setSeleccion] = useState<Set<number> | null>(null); // null = preselección
   const [busqueda, setBusqueda] = useState('');
   const [categoria, setCategoria] = useState('');
-  const [verId, setVerId] = useState(null);
+  const [verId, setVerId] = useState<number | null>(null);
 
   const detalle = useResultadoAG(verId);
   const lista = useMemo(() => catalogo.data ?? [], [catalogo.data]);
 
   const porDefecto = useMemo(
-    () => new Set(lista.filter((a) => PRESELECCION.includes(a.codigo)).map((a) => a.id)),
+    () => new Set(lista.filter((a) => PRESELECCION.includes(a.codigo ?? '')).map((a) => a.id)),
     [lista]
   );
   const elegidos = seleccion ?? porDefecto;
 
   const categorias = useMemo(
-    () => [...new Set(lista.map((a) => a.categoria).filter(Boolean))].sort(),
+    () => [...new Set(lista.map((a) => a.categoria).filter((c): c is string => !!c))].sort(),
     [lista]
   );
 
@@ -110,7 +117,7 @@ export default function PlanCalorico({ usuario, onClose, toast }) {
     );
   }, [lista, busqueda, categoria]);
 
-  const alternar = (id) => {
+  const alternar = (id: number) => {
     const s = new Set(elegidos);
     if (s.has(id)) s.delete(id);
     else s.add(id);
@@ -123,7 +130,7 @@ export default function PlanCalorico({ usuario, onClose, toast }) {
     setSeleccion(s);
   };
 
-  const enviar = (e) => {
+  const enviar = (e: FormEvent) => {
     e.preventDefault();
     const kg = Number(peso);
     if (!Number.isFinite(kg) || kg < 20 || kg > 300) {
@@ -274,7 +281,7 @@ export default function PlanCalorico({ usuario, onClose, toast }) {
       )}
       {plan && !cargandoPlan && <ResultadoPlan plan={plan} />}
 
-      {historial.data?.length > 0 && (
+      {historial.data && historial.data.length > 0 && (
         <details className="plan-hist">
           <summary>Historial de planes ({historial.data.length})</summary>
           {historial.data.map((h) => (
@@ -282,9 +289,9 @@ export default function PlanCalorico({ usuario, onClose, toast }) {
               <span className="grow">
                 <b>{h.objetivo === 'cut' ? 'Déficit' : 'Superávit'}</b>
                 {' · '}
-                {Math.round(h.totalDiario)} / {Math.round(h.caloriasObjetivo)} kcal
+                {Math.round(h.totalDiario ?? 0)} / {Math.round(h.caloriasObjetivo ?? 0)} kcal
                 <br />
-                <small>{fmtFecha(h.createdAt)} · {Number(h.peso).toFixed(1)} kg</small>
+                <small>{fmtFecha(h.createdAt)} · {Number(h.peso ?? 0).toFixed(1)} kg</small>
               </span>
               <button type="button" className="btn" onClick={() => setVerId(h.id)}>
                 Ver

@@ -2,7 +2,15 @@
 // El backend es la fuente de verdad (autorizacion); este helper solo decide si
 // le mostramos el boton "Eliminar" en el frontend.
 
-export function puedeEliminar({ actor, target }) {
+export interface Actor {
+  id: number | string;
+  rol: string;
+  coachId?: number | string | null;
+}
+
+export type Sujeto = Actor;
+
+export function puedeEliminar({ actor, target }: { actor: Actor | null; target: Sujeto | null }): boolean {
   if (!actor || !target) return false;
   const aId = Number(actor.id);
   const tId = Number(target.id);

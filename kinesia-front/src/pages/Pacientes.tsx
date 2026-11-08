@@ -4,26 +4,27 @@ import { Avatar, Mensaje, Modal, Rol } from '../components/ui';
 import FormUsuario from '../components/FormUsuario';
 import { api } from '../lib/api';
 import { puedeEliminar } from '../lib/permisos';
+import type { Usuario } from '../lib/types';
 
-export default function Pacientes({ go, toast }) {
+export default function Pacientes({ toast }: { toast?: (msg: string) => void }) {
   const { usuario } = useAuth();
   const [creando, setCreando] = useState(false);
-  const [lista, setLista] = useState([]);
-  const [coaches, setCoaches] = useState([]);
-  const [error, setError] = useState(null);
-  const [eliminando, setEliminando] = useState(null);
+  const [lista, setLista] = useState<Usuario[]>([]);
+  const [coaches, setCoaches] = useState<Usuario[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [eliminando, setEliminando] = useState<Usuario | null>(null);
   const esAdmin = usuario?.rol === 'admin';
   const mostrarAcciones = esAdmin || usuario?.rol === 'coach';
 
   const recargar = useCallback(async () => {
     try {
       const r = await api('/api/usuarios');
-      setLista(Array.isArray(r) ? r : []);
+      setLista(Array.isArray(r) ? (r as Usuario[]) : []);
       setError(null);
-    } catch (e) { setError(e.message || 'Error cargando usuarios'); }
+    } catch (e) { setError(e instanceof Error ? e.message : 'Error cargando usuarios'); }
   }, []);
 
-  const pedirEliminar = (u) => setEliminando(u);
+  const pedirEliminar = (u: Usuario) => setEliminando(u);
 
   const confirmarEliminar = async () => {
     if (!eliminando) return;
@@ -32,22 +33,19 @@ export default function Pacientes({ go, toast }) {
       toast?.('Usuario eliminado correctamente');
       setEliminando(null);
       recargar();
-    } catch (e) {
-      toast?.(e.message || 'No se pudo eliminar');
-      setEliminando(null);
-    }
+    } catch (e) { toast?.(e instanceof Error ? e.message : 'No se pudo eliminar'); setEliminando(null); }
   };
 
   useEffect(() => {
     recargar();
     if (esAdmin) {
       api('/api/usuarios/coaches')
-        .then((r) => setCoaches(Array.isArray(r) ? r : []))
+        .then((r) => setCoaches(Array.isArray(r) ? (r as Usuario[]) : []))
         .catch(() => setCoaches([]));
     }
   }, [recargar, esAdmin]);
 
-  const asignar = async (id, coachId) => {
+  const asignar = async (id: number, coachId: string) => {
     try {
       await api(`/api/usuarios/${id}/coach`, {
         method: 'PUT',
@@ -55,7 +53,7 @@ export default function Pacientes({ go, toast }) {
       });
       toast?.('Coach actualizado');
       recargar();
-    } catch (e) { toast?.(e.message || 'No se pudo asignar'); }
+    } catch (e) { toast?.(e instanceof Error ? e.message : 'No se pudo asignar'); }
   };
 
   if (usuario?.rol === 'paciente') return null;
@@ -111,7 +109,7 @@ export default function Pacientes({ go, toast }) {
                   <tr key={u.id}>
                     <td><Avatar usuario={u} /> {u.nombre}</td>
                     <td>{u.email}</td>
-                    <td><Rol v={u.rol} /></td>
+                    <td><Rol r={u.rol} /></td>
                     {esAdmin && (
                       <td className="coach-cell">
                         {u.rol === 'paciente' ? (

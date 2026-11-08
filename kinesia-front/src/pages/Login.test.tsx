@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '../contexts/AuthContext';
 import { api } from '../lib/api';
 import Login from './Login';
@@ -14,7 +15,9 @@ function renderLogin() {
   return render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Login />
+        <MemoryRouter>
+          <Login />
+        </MemoryRouter>
       </AuthProvider>
     </QueryClientProvider>
   );
@@ -30,7 +33,7 @@ describe('Login', () => {
     vi.mocked(api).mockResolvedValue({
       token: 'token-valido',
       usuario: { id: 1, nombre: 'Ana', email: 'ana@test.com', rol: 'paciente' },
-    });
+    } as never);
 
     renderLogin();
     const user = userEvent.setup();

@@ -35,6 +35,10 @@ jobs:
         working-directory: ./kinesia-front
         run: npm ci
 
+      - name: Run frontend lint
+        working-directory: ./kinesia-front
+        run: npm run lint
+
       - name: Run frontend tests
         working-directory: ./kinesia-front
         run: npm test

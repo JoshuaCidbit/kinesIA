@@ -37,7 +37,7 @@ describe('RutaGuard', () => {
     render(
       <RutaGuard rol="paciente" vista="mi-panel">
         <div>Contenido del panel</div>
-      </RutaGuard>
+      </RutaGuard>,
     );
     expect(screen.getByText('Contenido del panel')).toBeInTheDocument();
   });
@@ -46,7 +46,7 @@ describe('RutaGuard', () => {
     render(
       <RutaGuard rol="paciente" vista="dashboard" fallback={<div>Acceso denegado</div>}>
         <div>Contenido del panel</div>
-      </RutaGuard>
+      </RutaGuard>,
     );
     expect(screen.queryByText('Contenido del panel')).not.toBeInTheDocument();
     expect(screen.getByText('Acceso denegado')).toBeInTheDocument();

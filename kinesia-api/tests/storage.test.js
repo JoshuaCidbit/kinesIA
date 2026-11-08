@@ -10,7 +10,11 @@ process.env.AZURE_STORAGE_CONNECTION_STRING =
   `AccountKey=${Buffer.alloc(32, 7).toString('base64')};` +
   'EndpointSuffix=core.windows.net';
 
+process.env.USE_PG_MEM = 'true';
+process.env.DB_SSL = 'false';
+
 const { urlArchivo } = require('../src/services/storage.service');
+const { Usuario } = require('../src/models');
 
 test('urlArchivo genera una URL SAS de solo lectura', () => {
   const url = new URL(urlArchivo('usuarios/foto.jpeg'));
@@ -26,9 +30,6 @@ test('urlArchivo devuelve null cuando no hay ruta', () => {
 });
 
 test('Usuario.toJSON entrega la foto como URL firmada', () => {
-  process.env.USE_PG_MEM = 'true';
-  process.env.DB_SSL = 'false';
-  const { Usuario } = require('../src/models');
   const usuario = Usuario.build({
     id: 1,
     nombre: 'Ana',

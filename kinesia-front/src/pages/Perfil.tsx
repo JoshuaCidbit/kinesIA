@@ -5,31 +5,44 @@ import { useSesionesUsuario } from '../lib/queries';
 import { Avatar, Gauge, Chart, Mensaje } from '../components/ui';
 import PlanCalorico from '../components/PlanCalorico';
 import FormSesion from '../components/FormSesion';
+import type { Sesion, Usuario } from '../lib/types';
 
-export default function Perfil({ id, go, toast, embebido = false, onSesionCreada }) {
+interface PerfilProps {
+  id?: number;
+  go: (v: string) => void;
+  toast?: (msg: string) => void;
+  embebido?: boolean;
+  onSesionCreada?: () => void;
+}
+
+export default function Perfil({ id, go, toast, embebido = false, onSesionCreada }: PerfilProps) {
   const { usuario } = useAuth();
-  const esPaciente = usuario.rol === 'paciente';
-  const esCoach = usuario.rol === 'coach';
-  const esAdmin = usuario.rol === 'admin';
-  const pacienteId = id || usuario.id;
+  const esPaciente = usuario?.rol === 'paciente';
+  const esCoach = usuario?.rol === 'coach';
+  const esAdmin = usuario?.rol === 'admin';
+  const pacienteId = id ?? usuario?.id;
 
-  const [paciente, setPaciente] = useState(null);
+  const [paciente, setPaciente] = useState<Usuario | null>(null);
   const [verPlan, setVerPlan] = useState(false);
   const [registrando, setRegistrando] = useState(false);
 
   const cargar = useCallback(async () => {
+    if (!pacienteId) return;
     try {
-      setPaciente(await api(`/api/usuarios/${pacienteId}`));
+      const data = await api(`/api/usuarios/${pacienteId}`);
+      setPaciente(data as Usuario);
     } catch (err) {
       console.error('Error cargando perfil:', err);
-      if (err.status === 403) toast?.('No tienes acceso a este paciente');
+      if (err instanceof Object && 'status' in err && (err as { status?: number }).status === 403) {
+        toast?.('No tienes acceso a este paciente');
+      }
     }
-  }, [pacienteId]);
+  }, [pacienteId, toast]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
   const sesionesQ = useSesionesUsuario(pacienteId);
-  const sesiones = sesionesQ.data ?? [];
+  const sesiones = (sesionesQ.data ?? []) as Sesion[];
   const ultima = sesiones[0];
   const precisions = sesiones.map((s) => s.precisionPromedio).filter((v) => v != null);
   const anguloObjetivo = ultima?.Rutina?.anguloObjetivo ?? ultima?.anguloObjetivo ?? null;
@@ -38,13 +51,12 @@ export default function Perfil({ id, go, toast, embebido = false, onSesionCreada
   if (!paciente) return <Mensaje titulo="Cargando perfil..." />;
 
   const rolPerfil = paciente.rol ?? 'paciente';
-  const Titulo = embebido ? 'h2' : 'h1';
   const sub = [paciente.edad ? `${paciente.edad} años` : null, rolPerfil].filter(Boolean).join(' · ');
 
   const quitarCoach = () =>
     api(`/api/usuarios/${pacienteId}/coach`, { method: 'PUT', body: { coachId: null } })
       .then(() => { toast?.('Coach quitado'); cargar(); })
-      .catch((err) => toast?.(err.message));
+      .catch((err) => toast?.(err instanceof Error ? err.message : 'No se pudo quitar el coach'));
 
   return (
     <>
@@ -56,7 +68,7 @@ export default function Perfil({ id, go, toast, embebido = false, onSesionCreada
       <div className="card hero">
         <Avatar usuario={paciente} large />
         <div className="grow">
-          <Titulo>{paciente.nombre}</Titulo>
+          {embebido ? <h2>{paciente.nombre}</h2> : <h1>{paciente.nombre}</h1>}
           <p className="muted">{sub}</p>
         </div>
       </div>
@@ -80,7 +92,7 @@ export default function Perfil({ id, go, toast, embebido = false, onSesionCreada
               {ultima ? (
                 <>
                   <span className="muted">Precisión de la última sesión</span>
-                  <b className="progreso-num">{Math.round(precision)}%</b>
+                  <b className="progreso-num">{Math.round(precision ?? 0)}%</b>
                   <p className="muted">{ultima.repeticiones} repeticiones · {ultima.Rutina?.nombre ?? 'el ejercicio'}</p>
                   <Chart valores={precisions} />
                 </>

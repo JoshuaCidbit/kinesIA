@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { puedeEliminar } from './permisos';
+import { puedeEliminar, type Actor } from './permisos';
 
 describe('puedeEliminar', () => {
-  const admin = { id: 1, rol: 'admin' };
-  const coach = { id: 2, rol: 'coach' };
+  const admin: Actor = { id: 1, rol: 'admin' };
+  const coach: Actor = { id: 2, rol: 'coach' };
 
   it('admin puede eliminar a un paciente', () => {
     expect(puedeEliminar({ actor: admin, target: { id: 10, rol: 'paciente', coachId: null } })).toBe(true);

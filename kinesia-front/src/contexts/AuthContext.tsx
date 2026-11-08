@@ -1,14 +1,25 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
+import type { Usuario } from '../lib/types';
 
 const TOKEN_KEY = 'kinesia_token';
-const AuthContext = createContext(null);
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext<{
+  usuario: Usuario | null;
+  cargando: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+} | null>(null);
 
-export function AuthProvider({ children }) {
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth debe usarse dentro de un AuthProvider');
+  return ctx;
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
-  const [usuario, setUsuario] = useState(null);
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [cargando, setCargando] = useState(() => !!localStorage.getItem(TOKEN_KEY));
 
   const logout = useCallback(() => {
@@ -21,7 +32,7 @@ export function AuthProvider({ children }) {
   // Restaurar sesión al cargar
   useEffect(() => {
     if (!localStorage.getItem(TOKEN_KEY)) return;
-    api('/api/usuarios/me')
+    api<Usuario>('/api/usuarios/me')
       .then(setUsuario)
       .catch(() => logout())
       .finally(() => setCargando(false));
@@ -33,8 +44,8 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('kinesia:unauthorized', logout);
   }, [logout]);
 
-  const login = async (email, password) => {
-    const data = await api('/api/usuarios/login', { method: 'POST', body: { email, password } });
+  const login = async (email: string, password: string) => {
+    const data = await api<{ token: string; usuario: Usuario }>('/api/usuarios/login', { method: 'POST', body: { email, password } });
     localStorage.setItem(TOKEN_KEY, data.token);
     qc.clear();
     setUsuario(data.usuario);

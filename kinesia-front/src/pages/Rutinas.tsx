@@ -1,30 +1,39 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { useRutinas, useSesiones, useCrearRutina, useActualizarRutina, useEliminarRutina } from '../lib/queries';
 import { Gauge, Modal, Mensaje } from '../components/ui';
+import type { Rutina } from '../lib/types';
 
-function FormRutina({ inicial, onClose, onOk }) {
+interface FormRutinaState {
+  nombre: string;
+  descripcion: string;
+  anguloObjetivo: string;
+}
+
+function FormRutina({ inicial, onClose, onOk }: { inicial?: Rutina; onClose: () => void; onOk: () => void }) {
   const crear = useCrearRutina();
   const actualizar = useActualizarRutina();
   const op = inicial ? actualizar : crear;
-  const [f, setF] = useState({
+  const [f, setF] = useState<FormRutinaState>({
     nombre: inicial?.nombre ?? '',
     descripcion: inicial?.descripcion ?? '',
-    anguloObjetivo: inicial?.anguloObjetivo ?? '',
+    anguloObjetivo: inicial?.anguloObjetivo != null ? String(inicial.anguloObjetivo) : '',
   });
-  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
-  const enviar = (e) => {
+  const enviar = (e: FormEvent) => {
     e.preventDefault();
     const data = { nombre: f.nombre.trim(), descripcion: f.descripcion.trim(), anguloObjetivo: Number(f.anguloObjetivo) };
     if (inicial) actualizar.mutate({ id: inicial.id, data }, { onSuccess: onOk });
     else crear.mutate(data, { onSuccess: onOk });
   };
+  const setNombre = (e: ChangeEvent<HTMLInputElement>) => setF({ ...f, nombre: e.target.value });
+  const setDescripcion = (e: ChangeEvent<HTMLTextAreaElement>) => setF({ ...f, descripcion: e.target.value });
+  const setAngulo = (e: ChangeEvent<HTMLInputElement>) => setF({ ...f, anguloObjetivo: e.target.value });
   return (
     <Modal titulo={inicial ? 'Editar rutina' : 'Crear rutina'} onClose={onClose}>
       <form onSubmit={enviar}>
-        <label className="field">Nombre<input className="input" required value={f.nombre} onChange={set('nombre')} /></label>
-        <label className="field">Descripción<textarea className="input" rows="2" required value={f.descripcion} onChange={set('descripcion')} /></label>
+        <label className="field">Nombre<input className="input" required value={f.nombre} onChange={setNombre} /></label>
+        <label className="field">Descripción<textarea className="input" rows={2} required value={f.descripcion} onChange={setDescripcion} /></label>
         <label className="field">Ángulo objetivo (0–180°)
-          <input className="input" type="number" min="0" max="180" required value={f.anguloObjetivo} onChange={set('anguloObjetivo')} />
+          <input className="input" type="number" min="0" max="180" required value={f.anguloObjetivo} onChange={setAngulo} />
         </label>
         {op.isError && <p className="msg-err">{op.error.message}</p>}
         <div className="actions">
@@ -36,27 +45,27 @@ function FormRutina({ inicial, onClose, onOk }) {
   );
 }
 
-export default function Rutinas({ toast }) {
+export default function Rutinas({ toast }: { toast?: (msg: string) => void }) {
   const rutinas = useRutinas();
   const sesiones = useSesiones();
   const eliminar = useEliminarRutina();
-  const [modal, setModal] = useState(null); // { tipo: 'form' | 'borrar', rutina? }
+  const [modal, setModal] = useState<{ tipo: 'form' | 'borrar'; rutina?: Rutina } | null>(null); // { tipo: 'form' | 'borrar', rutina? }
 
-  const usos = (id) => (sesiones.data ?? []).filter((s) => Number(s.rutinaId) === Number(id)).length;
+  const usos = (id: number) => (sesiones.data ?? []).filter((s) => Number(s.rutinaId) === Number(id)).length;
 
-  const pedirBorrar = (r) => {
+  const pedirBorrar = (r: Rutina) => {
     const n = usos(r.id);
     if (n > 0) {
-      toast(`No se puede eliminar: la rutina tiene ${n} sesiones asociadas. Elimina o reasigna esas sesiones primero.`);
+      toast?.(`No se puede eliminar: la rutina tiene ${n} sesiones asociadas. Elimina o reasigna esas sesiones primero.`);
     } else {
       setModal({ tipo: 'borrar', rutina: r });
     }
   };
 
   const borrar = () =>
-    eliminar.mutate(modal.rutina.id, {
-      onSuccess: () => { setModal(null); toast('Rutina eliminada'); },
-      onError: (err) => { setModal(null); toast(err.message); }, // 409 si el servidor detecta sesiones
+    eliminar.mutate(modal?.rutina?.id ?? 0, {
+      onSuccess: () => { setModal(null); toast?.('Rutina eliminada'); },
+      onError: (err) => { setModal(null); toast?.(err.message); }, // 409 si el servidor detecta sesiones
     });
 
   return (
@@ -75,7 +84,7 @@ export default function Rutinas({ toast }) {
           return (
             <div key={r.id} className="card pcard">
               <div className="gauge-wrap">
-                <Gauge ang={r.anguloObjetivo} />
+                <Gauge ang={r.anguloObjetivo ?? 0} />
               </div>
               <b>{r.nombre}</b>
               <span className="muted desc">{r.descripcion}</span>
@@ -93,11 +102,11 @@ export default function Rutinas({ toast }) {
         <FormRutina
           inicial={modal.rutina}
           onClose={() => setModal(null)}
-          onOk={() => { setModal(null); toast(modal.rutina ? 'Rutina actualizada' : 'Rutina creada'); }}
+          onOk={() => { setModal(null); toast?.(modal.rutina ? 'Rutina actualizada' : 'Rutina creada'); }}
         />
       )}
       {modal?.tipo === 'borrar' && (
-        <Modal titulo={`¿Eliminar "${modal.rutina.nombre}"?`} onClose={() => setModal(null)}>
+        <Modal titulo={`¿Eliminar "${modal.rutina?.nombre}"?`} onClose={() => setModal(null)}>
           <p className="muted">Esta acción no se puede deshacer.</p>
           <div className="actions">
             <button className="btn" onClick={() => setModal(null)}>Cancelar</button>

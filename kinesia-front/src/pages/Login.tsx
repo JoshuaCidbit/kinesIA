@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-  const enviar = async (e) => {
+  const enviar = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setEnviando(true);
@@ -16,9 +18,11 @@ export default function Login() {
     try {
       await login(email, password);
       // En caso de éxito, App deja de renderizar <Login /> porque `usuario` cambia.
+      navigate('/', { replace: true });
     } catch (err) {
+      const status = (err as { status?: number } | null)?.status;
       setError(
-        err?.status === 429
+        status === 429
           ? 'Demasiados intentos. Intenta de nuevo en unos minutos.'
           : 'Correo o contraseña incorrectos'
       );
@@ -35,9 +39,10 @@ export default function Login() {
         <p className="sub">Accede a tu panel de rehabilitación.</p>
 
         <form onSubmit={enviar} aria-busy={enviando}>
-          <label className="field">
+          <label className="field" htmlFor="login-email">
             Correo electrónico
             <input
+              id="login-email"
               className="input"
               type="email"
               autoComplete="username"
@@ -49,12 +54,14 @@ export default function Login() {
             />
           </label>
 
-          <label className="field">
+          <label className="field" htmlFor="login-password">
             Contraseña
             <input
+              id="login-password"
               className="input"
               type="password"
               autoComplete="current-password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

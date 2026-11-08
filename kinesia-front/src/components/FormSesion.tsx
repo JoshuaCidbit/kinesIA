@@ -1,22 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useId, useState, type FormEvent } from 'react';
 import { Modal } from './ui';
 import { rutinas, sesiones } from '../lib/api';
+import type { Rutina, Usuario } from '../lib/types';
 
-export default function FormSesion({ usuario, toast, onClose, onCreada }) {
-  const [lista, setLista] = useState([]);
+interface FormSesionProps {
+  usuario: Usuario;
+  toast?: (msg: string) => void;
+  onClose: () => void;
+  onCreada?: () => void;
+}
+
+export default function FormSesion({ usuario, toast, onClose, onCreada }: FormSesionProps) {
+  const [lista, setLista] = useState<Rutina[]>([]);
   const [rutinaId, setRutinaId] = useState('');
   const [repeticiones, setRepeticiones] = useState('');
   const [precision, setPrecision] = useState('');
   const [obs, setObs] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const uid = useId();
 
   useEffect(() => {
     rutinas.listar()
-      .then((r) => setLista(Array.isArray(r) ? r : []))
+      .then((r) => setLista(Array.isArray(r) ? (r as Rutina[]) : []))
       .catch(() => setLista([]));
   }, []);
 
-  const enviar = async (e) => {
+  const enviar = async (e: FormEvent) => {
     e.preventDefault();
     const reps = Number(repeticiones);
     const prec = Number(precision);
@@ -38,7 +47,7 @@ export default function FormSesion({ usuario, toast, onClose, onCreada }) {
       onCreada?.();
       onClose?.();
     } catch (err) {
-      toast?.(err.message || 'No se pudo registrar');
+      toast?.(err instanceof Error ? err.message : 'No se pudo registrar');
     } finally { setEnviando(false); }
   };
 
@@ -46,23 +55,23 @@ export default function FormSesion({ usuario, toast, onClose, onCreada }) {
     <Modal titulo="Registrar sesión" onClose={onClose} className="form-modal">
       <form onSubmit={enviar}>
         <div className="form-group">
-          <label>Ejercicio *</label>
-          <select className="input" value={rutinaId} onChange={(e) => setRutinaId(e.target.value)} required>
+          <label htmlFor={`${uid}-rutina`}>Ejercicio *</label>
+          <select id={`${uid}-rutina`} className="input" value={rutinaId} onChange={(e) => setRutinaId(e.target.value)} required>
             <option value="">Selecciona una rutina</option>
             {lista.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label>Repeticiones *</label>
-          <input className="input" type="number" min="1" step="1" required value={repeticiones} onChange={(e) => setRepeticiones(e.target.value)} />
+          <label htmlFor={`${uid}-reps`}>Repeticiones *</label>
+          <input id={`${uid}-reps`} className="input" type="number" min="1" step="1" required value={repeticiones} onChange={(e) => setRepeticiones(e.target.value)} />
         </div>
         <div className="form-group">
-          <label>¿Qué tan bien lo hiciste? (%) *</label>
-          <input className="input" type="number" min="0" max="100" step="0.1" required value={precision} onChange={(e) => setPrecision(e.target.value)} />
+          <label htmlFor={`${uid}-prec`}>¿Qué tan bien lo hiciste? (%)</label>
+          <input id={`${uid}-prec`} className="input" type="number" min="0" max="100" step="0.1" required value={precision} onChange={(e) => setPrecision(e.target.value)} />
         </div>
         <div className="form-group">
-          <label>Observaciones</label>
-          <input className="input" value={obs} onChange={(e) => setObs(e.target.value)} />
+          <label htmlFor={`${uid}-obs`}>Observaciones</label>
+          <input id={`${uid}-obs`} className="input" value={obs} onChange={(e) => setObs(e.target.value)} />
         </div>
         <div className="actions">
           <button type="button" className="btn" onClick={onClose}>Cancelar</button>
