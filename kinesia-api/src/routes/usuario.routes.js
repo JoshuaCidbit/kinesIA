@@ -9,7 +9,7 @@ const { auth, rol, accesoPaciente } = require('../middlewares/auth');
 router.param('id', validarId);
 
 const limiteLogin = rateLimit({
-  windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false,
+  windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: true, legacyHeaders: false,
   message: { error: 'Demasiados intentos. Intenta de nuevo en unos minutos.' }
 });
 const delPaciente = accesoPaciente(r => r.params.id);
