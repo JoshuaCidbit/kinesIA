@@ -21,7 +21,7 @@ kinesia-front (React 19 + Vite)  ->  kinesia-api (Express/Sequelize)  ->  Postgr
 ## Requisitos
 
 - **kinesia-front**: Node >= 20.19
-- **kinesia-api**: Node >= 18
+- **kinesia-api**: Node >= 22
 - PostgreSQL (Azure Flexible Server en producción; en local se usa **pg-mem** en memoria)
 
 ## Ejecución local
