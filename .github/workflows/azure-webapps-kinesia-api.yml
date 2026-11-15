@@ -1,7 +1,6 @@
 name: Deploy KinesIA API to Azure App Service
 
 # GitHub solo ejecuta workflows que están en .github/workflows de la RAÍZ.
-# Este workflow reemplaza al archivo legado kinesia-api/.github/workflows/master_kinesia-api.yml.
 
 on:
   push:

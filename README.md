@@ -89,7 +89,7 @@ npm run dev
 |---|---|
 | `npm run dev` | Servidor de desarrollo Vite. |
 | `npm run build` | Build de producción. |
-| `npm run lint` | Linter (oxlint). |
+| `npm run lint` | Linter (ESLint 9 + typescript-eslint). |
 | `npm run preview` | Previsualizar build. |
 | `npm test` | Tests con Vitest. |
 | `npm run test:watch` | Tests en modo watch. |
