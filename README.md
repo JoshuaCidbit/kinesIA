@@ -114,7 +114,7 @@ La API consume la Function si defines `FUNCTIONS_URL` (y opcionalmente `FUNCTION
 
 ## API REST
 
-Todas las rutas requieren `Authorization: Bearer <token>` salvo `/api/health`, `/api/usuarios/login` y el proxy `/api/estadisticas/:usuarioId`.
+Todas las rutas requieren `Authorization: Bearer <token>` salvo `/api/health` y `/api/usuarios/login`.
 
 | Recurso | Endpoints principales | Rol |
 |---|---|---|
@@ -126,7 +126,7 @@ Todas las rutas requieren `Authorization: Bearer <token>` salvo `/api/health`, `
 | Sesiones | `GET/POST /api/sesiones`, `GET /api/sesiones/usuario/:usuarioId`, `GET/PUT/DELETE /api/sesiones/:id` | coach/admin (paciente: propias) |
 | Alimentos | `GET /api/alimentos`, escritura `POST/PUT/DELETE` | lectura autenticado; escritura coach/admin |
 | AG calórico | `GET/POST /api/ag/calorico`, `GET /api/ag/usuario/:usuarioId`, `GET /api/ag/resultados/:id` | autenticado (acceso por paciente) |
-| Estadísticas | `GET /api/estadisticas/:usuarioId` (proxy a Azure Functions) | público (sin auth) |
+| Estadísticas | `GET /api/estadisticas/:usuarioId` (proxy a Azure Functions) | autenticado (acceso por paciente) |
 
 ## Scripts
 

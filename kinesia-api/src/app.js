@@ -22,32 +22,12 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Proxy hacia la Azure Function de estadísticas
-app.get('/api/estadisticas/:usuarioId', async (req, res) => {
-  const id = Number(req.params.usuarioId);
-  if (!Number.isInteger(id)) {
-    return res.status(400).json({ error: 'usuarioId debe ser entero' });
-  }
-  if (!process.env.FUNCTIONS_URL) {
-    return res.status(500).json({ error: 'FUNCTIONS_URL no configurada' });
-  }
-  try {
-    const r = await fetch(`${process.env.FUNCTIONS_URL}/api/estadisticas/${id}`, {
-      headers: process.env.FUNCTIONS_KEY ? { 'x-functions-key': process.env.FUNCTIONS_KEY } : {},
-      signal: AbortSignal.timeout(8000),
-    });
-    const body = await r.json().catch(() => ({}));
-    res.status(r.status).json(body);
-  } catch {
-    res.status(502).json({ error: 'El servicio de estadísticas no responde' });
-  }
-});
-
 app.use('/api/usuarios', require('./routes/usuario.routes'));
 app.use('/api/rutinas', require('./routes/rutina.routes'));
 app.use('/api/sesiones', require('./routes/sesion.routes'));
 app.use('/api/alimentos', require('./routes/alimento.routes'));
 app.use('/api/ag', require('./routes/ag.routes'));
+app.use('/api/estadisticas', require('./routes/estadisticas.routes'));
 
 app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
 
