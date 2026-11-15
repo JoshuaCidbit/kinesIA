@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Avatar, Mensaje, Modal, Rol } from '../components/ui';
 import FormUsuario from '../components/FormUsuario';
@@ -91,13 +92,23 @@ export default function Pacientes({ toast }: { toast?: (msg: string) => void }) 
               <tbody>
                 {lista.map((u) => (
                   <tr key={u.id}>
-                    <td><Avatar usuario={u} /> {u.nombre}</td>
+                    <td>
+                      {u.rol === 'paciente' ? (
+                        <Link to={`/pacientes/${u.id}`} className="fila-nombre" onClick={(e) => e.stopPropagation()}>
+                          <Avatar usuario={u} /> {u.nombre}
+                        </Link>
+                      ) : (
+                        <>
+                          <Avatar usuario={u} /> {u.nombre}
+                        </>
+                      )}
+                    </td>
                     <td>{u.email}</td>
                     <td><Rol r={u.rol} /></td>
                     {esAdmin && (
                       <td className="coach-cell">
                         {u.rol === 'paciente' ? (
-                          <select className="input" value={u.coachId ?? ''} onChange={(e) => asignar(u.id, e.target.value)}>
+                          <select className="input" value={u.coachId ?? ''} onChange={(e) => { e.stopPropagation(); asignar(u.id, e.target.value); }}>
                             <option value="">Sin coach</option>
                             {coaches.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                           </select>
@@ -106,7 +117,7 @@ export default function Pacientes({ toast }: { toast?: (msg: string) => void }) 
                     )}
                     <td className="coach-cell">
                       {puedeEliminar({ actor: usuario, target: u }) && (
-                        <button className="btn" onClick={() => pedirEliminar(u)}>Eliminar</button>
+                        <button className="btn" onClick={(e) => { e.stopPropagation(); pedirEliminar(u); }}>Eliminar</button>
                       )}
                     </td>
                   </tr>

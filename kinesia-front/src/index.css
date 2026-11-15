@@ -71,7 +71,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .foot{margin-top:auto;padding:12px;font-size:13px;color:var(--ink-soft);border-top:1px solid var(--vein);display:flex;align-items:center;gap:8px}
 .foot i{width:8px;height:8px;border-radius:50%;background:var(--c);flex:none}
 
-main{padding:28px clamp(16px,4vw,48px) 64px;max-width:1120px;width:100%}
+main{padding:28px clamp(16px,4vw,48px) 64px;max-width:1120px;width:100%;min-width:0}
 h1{font-size:clamp(30px,6vw,46px);letter-spacing:-.02em;margin:0 0 6px;line-height:1.15;font-weight:700}
 h2{font-size:18px;margin:0 0 14px}
 h3{font-size:15px;font-weight:500;margin:0 0 12px}
@@ -307,6 +307,10 @@ h2.seccion{margin:28px 0 14px}
 .scroll tbody tr:hover{background:color-mix(in srgb,var(--accent) 5%,transparent)}
 .scroll td:first-child{font-weight:600}
 .coach-cell select.input{width:auto;min-height:36px;padding:6px 10px;font-size:13px;border-radius:8px;min-width:150px}
+
+.fila-nombre{color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.fila-nombre:hover{text-decoration:underline}
+.fila-nombre:focus-visible{outline:2px solid var(--root);outline-offset:2px;border-radius:4px}
 
 /* Formularios (modal y demás) */
 .form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;font-weight:500;font-size:14px}
