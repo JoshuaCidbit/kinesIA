@@ -1,13 +1,13 @@
 # KinesIA Frontend
 
-Conecta el frontend de React con la API REST de KinesIA (Azure App Service) y Azure Functions.
+Conecta el frontend de React con la API REST de KinesIA (Azure App Service). Las estadísticas se consumen a través del proxy de la API, que llama a Azure Functions.
 
 ## Características principales
 
 - **Cliente HTTP** (`src/lib/api.ts`): Utiliza `fetch` del navegador para llamar a la API.
 - **Cliente de consultas** (`src/lib/queries.ts`): TanStack Query v5 con mutaciones, queries y gestión de caché.
 - **Proveedor** (`src/main.tsx`): Envuelve toda la aplicación con QueryClientProvider.
-- **Ejemplo de uso** (`src/App.tsx`): Componente de ejemplo con prácticas recomendadas.
+- **Router** (`src/App.tsx`): rutas con React Router y carga diferida (`React.lazy`) por vista.
 
 ## Stack y tooling
 
@@ -65,10 +65,13 @@ crear.mutate({ usuarioId: 1, rutinaId: 2, ... }, {
 
 ## Estructuras de datos reales
 
-- **Usuario**: `{ id, nombre, email, edad, fotoUrl, fotoPath }`
-- **Rutina**: `{ id, nombre, descripcion, anguloObjetivo, mediaUrl }`
-- **Sesión**: `{ id, fecha, repeticiones, precisionPromedio, observaciones, usuarioId, rutinaId, Usuario, Rutina }`
-- **Estadísticas**: `{ usuarioId, totalSesiones, promedioPrecision, ultimaSesion, rutinaMasUsada }`
+Definidas en `src/lib/types.ts`:
+
+- **Usuario**: `{ id, nombre, email, rol, fotoUrl?, coachId?, coach?, edad?, createdAt? }`
+- **Rutina**: `{ id, nombre, descripcion?, anguloObjetivo? }`
+- **Sesión**: `{ id?, usuarioId?, rutinaId?, fecha?, repeticiones?, precisionPromedio?, observaciones?, anguloObjetivo?, Usuario?, Rutina? }`
+- **Estadísticas**: `{ usuarioId, totalSesiones, promedioPrecision, ultimaSesion?, rutinaMasUsada? }`
+- **Alimento**: `{ id, nombre, categoria?, codigo?, calorias, porciones?, porcionBase?, unidad? }`
 - **Errores**: `{ error: "..." }`
 
 ## Comprobar la conexión
@@ -87,6 +90,6 @@ curl -i https://kinesia-api-xxxxx.azurewebsites.net/api/estadisticas/1
 ## Notas de implementación
 
 - El proxy `/api/estadisticas/:usuarioId` en Express oculta la URL de Azure Functions.
-- `api.ts` exporta clientes HTTP (`usuarios`, `rutinas`, `sesiones`, `sistema`).
+- `api.ts` exporta clientes HTTP (`usuarios`, `rutinas`, `sesiones`, `alimentos`, `sistema`, `ag`).
 - `queries.ts` expone hooks (`useUsuarios`, `useCrearSesion`, etc.).
 - El proxy espera `FUNCTIONS_URL` y opcionalmente `FUNCTIONS_KEY` desde las variables de entorno de App Service.
