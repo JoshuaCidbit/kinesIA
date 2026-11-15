@@ -37,13 +37,26 @@ export default function Pacientes({ toast }: { toast?: (msg: string) => void }) 
   };
 
   useEffect(() => {
-    recargar();
+    let activa = true;
+    const refrescarLista = () =>
+      api('/api/usuarios')
+        .then((r) => {
+          if (!activa) return;
+          setLista(Array.isArray(r) ? (r as Usuario[]) : []);
+          setError(null);
+        })
+        .catch((e) => {
+          if (!activa) return;
+          setError(e instanceof Error ? e.message : 'Error cargando usuarios');
+        });
+    refrescarLista();
     if (esAdmin) {
       api('/api/usuarios/coaches')
-        .then((r) => setCoaches(Array.isArray(r) ? (r as Usuario[]) : []))
-        .catch(() => setCoaches([]));
+        .then((r) => { if (activa) setCoaches(Array.isArray(r) ? (r as Usuario[]) : []); })
+        .catch(() => { if (activa) setCoaches([]); });
     }
-  }, [recargar, esAdmin]);
+    return () => { activa = false; };
+  }, [esAdmin]);
 
   const asignar = async (id: number, coachId: string) => {
     try {

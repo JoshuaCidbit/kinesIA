@@ -33,7 +33,22 @@ export default function MiPanel({ toast }: { toast?: (msg: string) => void }) {
     }
   }, [usuarioId]);
 
-  useEffect(() => { cargarDatos(); }, [cargarDatos]);
+  useEffect(() => {
+    if (!usuarioId) return;
+    let activa = true;
+    api(`/api/sesiones/usuario/${usuarioId}`)
+      .then((data) => {
+        if (!activa) return;
+        setSesiones(Array.isArray(data) ? (data as Sesion[]) : []);
+        setEstado('ok');
+      })
+      .catch((err) => {
+        if (!activa) return;
+        console.error('Error cargando MiPanel:', err);
+        setEstado('error');
+      });
+    return () => { activa = false; };
+  }, [usuarioId]);
 
   const total = sesiones.length;
   const promedio = total > 0

@@ -39,7 +39,23 @@ export default function Perfil({ id, go, toast, embebido = false, onSesionCreada
     }
   }, [pacienteId, toast]);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    if (!pacienteId) return;
+    let activa = true;
+    api(`/api/usuarios/${pacienteId}`)
+      .then((data) => {
+        if (!activa) return;
+        setPaciente(data as Usuario);
+      })
+      .catch((err) => {
+        if (!activa) return;
+        console.error('Error cargando perfil:', err);
+        if (err instanceof Object && 'status' in err && (err as { status?: number }).status === 403) {
+          toast?.('No tienes acceso a este paciente');
+        }
+      });
+    return () => { activa = false; };
+  }, [pacienteId, toast]);
 
   const sesionesQ = useSesionesUsuario(pacienteId);
   const sesiones = (sesionesQ.data ?? []) as Sesion[];
