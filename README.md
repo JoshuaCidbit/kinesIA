@@ -15,7 +15,7 @@ kinesia-front (React 19 + Vite)  ->  kinesia-api (Express/Sequelize)  ->  Postgr
 
 - **kinesia-front**: SPA en React 19 + TypeScript + Vite. Consume la API REST mediante `fetch` (cliente en `src/lib/api.ts`) y TanStack Query (`src/lib/queries.ts`). En desarrollo se proxya `/api` a la API local. Rutas con React Router (`src/App.tsx`).
 - **kinesia-api**: API REST en Node/Express con Sequelize sobre **PostgreSQL Flexible Server** en Azure. Incluye autenticación JWT, autorización por rol (paciente/coach/admin) y subida de archivos (fotos/videos) a Blob Storage.
-- **kinesia-AG**: prototipo/algoritmo genético (calorías objetivo, distribución de comidas, restricciones) usado por la API y consumido por el frontend para el plan calórico.
+- **AG calórico**: implementación en `kinesia-api/src/ag/` (calorías objetivo, distribución de comidas, restricciones), consumida por el frontend para el plan calórico.
 - **kinesia-api/functions**: Azure Functions (Node) con el endpoint HTTP de **estadísticas**; la API lo usa como proxy (`/api/estadisticas/:usuarioId`).
 
 ## Requisitos
