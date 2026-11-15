@@ -1,39 +1,25 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { type CSSProperties } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../lib/api';
 import { nivel } from '../lib/utils';
+import { useSesiones } from '../lib/queries';
 import { Leyenda } from '../components/ui';
 import type { Sesion } from '../lib/types';
 
 export default function Dashboard({ go }: { go: (v: string) => void }) {
   const { usuario } = useAuth();
-  const [estadisticas, setEstadisticas] = useState<{ total: number; promedio: number } | null>(null);
-  const [error, setError] = useState(false);
 
   // Solo coach y admin ven el dashboard
   const esPaciente = usuario?.rol === 'paciente';
 
-  useEffect(() => {
-    if (esPaciente) return;
-    const cargarEstadisticas = async () => {
-      try {
-        const sesiones = await api<Sesion[]>('/api/sesiones');
-        const total = sesiones.length;
-        const suma = sesiones.reduce((sum, s) => sum + (s.precisionPromedio || 0), 0);
-        const promedio = total > 0 ? Math.round((suma / total) * 10) / 10 : 0;
-        setEstadisticas({ total, promedio });
-      } catch (err) {
-        console.error('Error cargando estadísticas:', err);
-        setError(true);
-      }
-    };
-    cargarEstadisticas();
-  }, [usuario?.id, esPaciente]);
+  const sesionesQ = useSesiones(!esPaciente);
+  const sesiones = (sesionesQ.data ?? []) as Sesion[];
+  const total = sesiones.length;
+  const suma = sesiones.reduce((sum, s) => sum + (s.precisionPromedio || 0), 0);
+  const promedio = total > 0 ? Math.round((suma / total) * 10) / 10 : 0;
+  const error = sesionesQ.isError;
 
   if (esPaciente) return null;
 
-  const total = estadisticas?.total ?? 0;
-  const promedio = estadisticas?.promedio ?? 0;
   const colorPrecision = total > 0 ? nivel(promedio)[0] : 'var(--root)';
   const esAdmin = usuario?.rol === 'admin';
 

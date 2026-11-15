@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, type CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../lib/api';
 import { nivel } from '../lib/utils';
+import { useSesionesUsuario } from '../lib/queries';
 import { Leyenda } from '../components/ui';
 import PlanCalorico from '../components/PlanCalorico';
 import Perfil from './Perfil';
@@ -17,38 +17,11 @@ const ESTADOS: Record<string, [string, string]> = {
 export default function MiPanel({ toast }: { toast?: (msg: string) => void }) {
   const { usuario } = useAuth();
   const usuarioId = usuario?.id;
-  const [estado, setEstado] = useState('cargando');
-  const [sesiones, setSesiones] = useState<Sesion[]>([]);
   const [verPlan, setVerPlan] = useState(false);
 
-  const cargarDatos = useCallback(async () => {
-    if (!usuarioId) return;
-    try {
-      const data = await api('/api/sesiones/usuario/' + usuarioId);
-      setSesiones(Array.isArray(data) ? (data as Sesion[]) : []);
-      setEstado('ok');
-    } catch (err) {
-      console.error('Error cargando MiPanel:', err);
-      setEstado('error');
-    }
-  }, [usuarioId]);
-
-  useEffect(() => {
-    if (!usuarioId) return;
-    let activa = true;
-    api(`/api/sesiones/usuario/${usuarioId}`)
-      .then((data) => {
-        if (!activa) return;
-        setSesiones(Array.isArray(data) ? (data as Sesion[]) : []);
-        setEstado('ok');
-      })
-      .catch((err) => {
-        if (!activa) return;
-        console.error('Error cargando MiPanel:', err);
-        setEstado('error');
-      });
-    return () => { activa = false; };
-  }, [usuarioId]);
+  const sesionesQ = useSesionesUsuario(usuarioId);
+  const sesiones = (sesionesQ.data ?? []) as Sesion[];
+  const estado = sesionesQ.isPending ? 'cargando' : sesionesQ.isError ? 'error' : 'ok';
 
   const total = sesiones.length;
   const promedio = total > 0
@@ -83,7 +56,7 @@ export default function MiPanel({ toast }: { toast?: (msg: string) => void }) {
       <Leyenda />
 
       <h2 className="seccion">Mi perfil</h2>
-      <Perfil id={usuarioId} go={() => {}} toast={toast} embebido onSesionCreada={cargarDatos} />
+      <Perfil id={usuarioId} go={() => {}} toast={toast} embebido />
       {verPlan && <PlanCalorico usuario={usuario} toast={toast} onClose={() => setVerPlan(false)} />}
     </>
   );

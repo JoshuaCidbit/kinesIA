@@ -1,29 +1,24 @@
-import { useEffect, useId, useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import { Modal } from './ui';
-import { rutinas, sesiones } from '../lib/api';
+import { useCrearSesion, useRutinas } from '../lib/queries';
 import type { Rutina, Usuario } from '../lib/types';
 
 interface FormSesionProps {
   usuario: Usuario;
   toast?: (msg: string) => void;
   onClose: () => void;
-  onCreada?: () => void;
 }
 
-export default function FormSesion({ usuario, toast, onClose, onCreada }: FormSesionProps) {
-  const [lista, setLista] = useState<Rutina[]>([]);
+export default function FormSesion({ usuario, toast, onClose }: FormSesionProps) {
   const [rutinaId, setRutinaId] = useState('');
   const [repeticiones, setRepeticiones] = useState('');
   const [precision, setPrecision] = useState('');
   const [obs, setObs] = useState('');
-  const [enviando, setEnviando] = useState(false);
   const uid = useId();
 
-  useEffect(() => {
-    rutinas.listar()
-      .then((r) => setLista(Array.isArray(r) ? (r as Rutina[]) : []))
-      .catch(() => setLista([]));
-  }, []);
+  const rutinasQ = useRutinas();
+  const lista = (rutinasQ.data ?? []) as Rutina[];
+  const crear = useCrearSesion();
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault();
@@ -33,9 +28,8 @@ export default function FormSesion({ usuario, toast, onClose, onCreada }: FormSe
     if (!Number.isInteger(reps) || reps < 1) return toast?.('Repeticiones inválidas');
     if (!Number.isFinite(prec) || prec < 0 || prec > 100) return toast?.('El porcentaje debe ser de 0 a 100');
 
-    setEnviando(true);
     try {
-      await sesiones.crear({
+      await crear.mutateAsync({
         usuarioId: usuario.id,
         rutinaId: Number(rutinaId),
         fecha: new Date().toISOString(),
@@ -44,11 +38,10 @@ export default function FormSesion({ usuario, toast, onClose, onCreada }: FormSe
         observaciones: obs.trim() || undefined,
       });
       toast?.('Sesión registrada');
-      onCreada?.();
       onClose?.();
     } catch (err) {
       toast?.(err instanceof Error ? err.message : 'No se pudo registrar');
-    } finally { setEnviando(false); }
+    }
   };
 
   return (
@@ -75,7 +68,7 @@ export default function FormSesion({ usuario, toast, onClose, onCreada }: FormSe
         </div>
         <div className="actions">
           <button type="button" className="btn" onClick={onClose}>Cancelar</button>
-          <button type="submit" className="btn pri" disabled={enviando}>{enviando ? 'Guardando...' : 'Guardar sesión'}</button>
+          <button type="submit" className="btn pri" disabled={crear.isPending}>{crear.isPending ? 'Guardando...' : 'Guardar sesión'}</button>
         </div>
       </form>
     </Modal>

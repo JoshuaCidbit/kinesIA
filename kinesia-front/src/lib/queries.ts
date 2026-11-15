@@ -60,6 +60,16 @@ export function useSubirFotoUsuario() {
   });
 }
 
+export function useActualizarCoach() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, coachId }: { id: number; coachId: number | null }) =>
+      usuarios.actualizarCoach(id, coachId),
+    // invalidar ['usuarios'] cubre también ['usuarios', id]
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.usuarios }),
+  });
+}
+
 // ---------- Rutinas ----------
 export const useRutinas = () => useQuery({ queryKey: keys.rutinas, queryFn: rutinas.listar });
 
@@ -96,7 +106,8 @@ export function useSubirMediaRutina() {
 }
 
 // ---------- Sesiones ----------
-export const useSesiones = () => useQuery({ queryKey: keys.sesiones, queryFn: sesiones.listar });
+export const useSesiones = (enabled = true) =>
+  useQuery({ queryKey: keys.sesiones, queryFn: sesiones.listar, enabled });
 export const useSesionesUsuario = (id?: number | null) =>
   useQuery({ queryKey: keys.sesionesUsuario(id ?? 0), queryFn: () => sesiones.porUsuario(id as number), enabled: !!id });
 
@@ -171,7 +182,6 @@ export function useGenerarPlanCalorico(usuarioId?: number) {
   });
 }
 
-// Línea 180: useCoaches (revisar que existe y tenga enabled)
 export function useCoaches(enabled = true) {
   return useQuery({ queryKey: ['coaches'], queryFn: usuarios.coaches, enabled });
 }

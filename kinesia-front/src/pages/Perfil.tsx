@@ -1,61 +1,37 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../lib/api';
-import { useSesionesUsuario } from '../lib/queries';
+import { useActualizarCoach, useSesionesUsuario, useUsuario } from '../lib/queries';
 import { Avatar, Gauge, Chart, Mensaje } from '../components/ui';
 import PlanCalorico from '../components/PlanCalorico';
 import FormSesion from '../components/FormSesion';
-import type { Sesion, Usuario } from '../lib/types';
+import type { Sesion } from '../lib/types';
 
 interface PerfilProps {
   id?: number;
   go: (v: string) => void;
   toast?: (msg: string) => void;
   embebido?: boolean;
-  onSesionCreada?: () => void;
 }
 
-export default function Perfil({ id, go, toast, embebido = false, onSesionCreada }: PerfilProps) {
+export default function Perfil({ id, go, toast, embebido = false }: PerfilProps) {
   const { usuario } = useAuth();
   const esPaciente = usuario?.rol === 'paciente';
   const esCoach = usuario?.rol === 'coach';
   const esAdmin = usuario?.rol === 'admin';
   const pacienteId = id ?? usuario?.id;
 
-  const [paciente, setPaciente] = useState<Usuario | null>(null);
   const [verPlan, setVerPlan] = useState(false);
   const [registrando, setRegistrando] = useState(false);
+  const quitarCoachM = useActualizarCoach();
 
-  const cargar = useCallback(async () => {
-    if (!pacienteId) return;
-    try {
-      const data = await api(`/api/usuarios/${pacienteId}`);
-      setPaciente(data as Usuario);
-    } catch (err) {
-      console.error('Error cargando perfil:', err);
-      if (err instanceof Object && 'status' in err && (err as { status?: number }).status === 403) {
-        toast?.('No tienes acceso a este paciente');
-      }
-    }
-  }, [pacienteId, toast]);
+  const pacienteQ = useUsuario(pacienteId);
+  const paciente = pacienteQ.data ?? null;
 
-  useEffect(() => {
-    if (!pacienteId) return;
-    let activa = true;
-    api(`/api/usuarios/${pacienteId}`)
-      .then((data) => {
-        if (!activa) return;
-        setPaciente(data as Usuario);
-      })
-      .catch((err) => {
-        if (!activa) return;
-        console.error('Error cargando perfil:', err);
-        if (err instanceof Object && 'status' in err && (err as { status?: number }).status === 403) {
-          toast?.('No tienes acceso a este paciente');
-        }
-      });
-    return () => { activa = false; };
-  }, [pacienteId, toast]);
+  const quitarCoach = () =>
+    quitarCoachM
+      .mutateAsync({ id: pacienteId as number, coachId: null })
+      .then(() => toast?.('Coach quitado'))
+      .catch((err) => toast?.(err instanceof Error ? err.message : 'No se pudo quitar el coach'));
 
   const sesionesQ = useSesionesUsuario(pacienteId);
   const sesiones = (sesionesQ.data ?? []) as Sesion[];
@@ -64,15 +40,13 @@ export default function Perfil({ id, go, toast, embebido = false, onSesionCreada
   const anguloObjetivo = ultima?.Rutina?.anguloObjetivo ?? ultima?.anguloObjetivo ?? null;
   const precision = ultima?.precisionPromedio ?? null;
 
+  if (pacienteQ.isError) {
+    return <Mensaje error titulo="No se pudo cargar el perfil" texto={pacienteQ.error.message} />;
+  }
   if (!paciente) return <Mensaje titulo="Cargando perfil..." />;
 
   const rolPerfil = paciente.rol ?? 'paciente';
   const sub = [paciente.edad ? `${paciente.edad} años` : null, rolPerfil].filter(Boolean).join(' · ');
-
-  const quitarCoach = () =>
-    api(`/api/usuarios/${pacienteId}/coach`, { method: 'PUT', body: { coachId: null } })
-      .then(() => { toast?.('Coach quitado'); cargar(); })
-      .catch((err) => toast?.(err instanceof Error ? err.message : 'No se pudo quitar el coach'));
 
   return (
     <>
@@ -165,12 +139,7 @@ export default function Perfil({ id, go, toast, embebido = false, onSesionCreada
 
       {verPlan && <PlanCalorico usuario={paciente} toast={toast} onClose={() => setVerPlan(false)} />}
       {registrando && (
-        <FormSesion
-          usuario={paciente}
-          toast={toast}
-          onClose={() => setRegistrando(false)}
-          onCreada={onSesionCreada}
-        />
+        <FormSesion usuario={paciente} toast={toast} onClose={() => setRegistrando(false)} />
       )}
     </>
   );

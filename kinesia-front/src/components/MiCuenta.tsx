@@ -2,7 +2,8 @@ import { useId, useRef, useState, type ChangeEvent, type FormEvent } from 'react
 import { Modal } from './ui';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { api, usuarios } from '../lib/api';
+import { useSubirFotoUsuario } from '../lib/queries';
+import { api } from '../lib/api';
 
 interface MiCuentaProps {
   onClose: () => void;
@@ -20,6 +21,7 @@ export default function MiCuenta({ onClose, onLogout, toast }: MiCuentaProps) {
   const [guardando, setGuardando] = useState(false);
   const inputFoto = useRef<HTMLInputElement>(null);
   const uid = useId();
+  const subirFotoM = useSubirFotoUsuario();
 
   if (!usuario) return null;
 
@@ -27,7 +29,7 @@ export default function MiCuenta({ onClose, onLogout, toast }: MiCuentaProps) {
     const f = e.target.files?.[0];
     if (!f) return;
     try {
-      await usuarios.subirFoto(usuario.id, f);
+      await subirFotoM.mutateAsync({ id: usuario.id, archivo: f });
       toast?.('Foto actualizada');
     } catch (err) {
       toast?.(err instanceof Error ? err.message : 'No se pudo subir la foto');

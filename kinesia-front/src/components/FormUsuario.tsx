@@ -1,22 +1,25 @@
 import { useId, useState, type FormEvent } from 'react';
 import { Modal } from './ui';
-import { api } from '../lib/api';
+import { useCoaches, useCrearUsuario } from '../lib/queries';
+import type { Usuario } from '../lib/types';
 
 interface FormUsuarioProps {
   esAdmin: boolean;
   toast?: (msg: string) => void;
   onClose: () => void;
-  onCreated?: () => void;
 }
 
-export default function FormUsuario({ esAdmin, toast, onClose, onCreated }: FormUsuarioProps) {
+export default function FormUsuario({ esAdmin, toast, onClose }: FormUsuarioProps) {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rol, setRol] = useState('paciente');
   const [coachId, setCoachId] = useState('');
-  const [loading, setLoading] = useState(false);
   const uid = useId();
+
+  const crear = useCrearUsuario();
+  const coachesQ = useCoaches(esAdmin);
+  const coaches = (coachesQ.data ?? []) as Usuario[];
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -34,7 +37,6 @@ export default function FormUsuario({ esAdmin, toast, onClose, onCreated }: Form
       return;
     }
 
-    setLoading(true);
     try {
       const body: { nombre: string; email: string; password: string; rol: string; coachId?: number } = {
         nombre: nombre.trim(),
@@ -47,14 +49,11 @@ export default function FormUsuario({ esAdmin, toast, onClose, onCreated }: Form
         body.coachId = Number(coachId);
       }
 
-      await api('/api/usuarios', { method: 'POST', body });
+      await crear.mutateAsync(body);
       toast?.('Usuario creado correctamente');
       onClose?.();
-      onCreated?.();
     } catch (e) {
       toast?.(e instanceof Error ? e.message : 'No se pudo crear el usuario');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -122,7 +121,7 @@ export default function FormUsuario({ esAdmin, toast, onClose, onCreated }: Form
             <label htmlFor={`${uid}-coach`}>Coach asignado</label>
             <select id={`${uid}-coach`} className="input" value={coachId} onChange={(e) => setCoachId(e.target.value)}>
               <option value="">Sin coach</option>
-              {/* Se poblaría con la lista real de coaches desde el parent */}
+              {coaches.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
             </select>
             <small className="muted">Así el paciente empezará a recibir sus sesiones.</small>
           </div>
@@ -130,7 +129,7 @@ export default function FormUsuario({ esAdmin, toast, onClose, onCreated }: Form
 
         <div className="actions">
           <button type="button" className="btn" onClick={onClose}>Cancelar</button>
-          <button type="submit" className="btn pri" disabled={loading}>{loading ? 'Creando...' : 'Crear usuario'}</button>
+          <button type="submit" className="btn pri" disabled={crear.isPending}>{crear.isPending ? 'Creando...' : 'Crear usuario'}</button>
         </div>
       </form>
     </Modal>

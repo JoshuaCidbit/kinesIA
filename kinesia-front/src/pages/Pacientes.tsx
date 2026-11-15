@@ -1,71 +1,42 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Avatar, Mensaje, Modal, Rol } from '../components/ui';
 import FormUsuario from '../components/FormUsuario';
-import { api } from '../lib/api';
+import { useActualizarCoach, useCoaches, useEliminarUsuario, useUsuarios } from '../lib/queries';
 import { puedeEliminar } from '../lib/permisos';
 import type { Usuario } from '../lib/types';
 
 export default function Pacientes({ toast }: { toast?: (msg: string) => void }) {
   const { usuario } = useAuth();
   const [creando, setCreando] = useState(false);
-  const [lista, setLista] = useState<Usuario[]>([]);
-  const [coaches, setCoaches] = useState<Usuario[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [eliminando, setEliminando] = useState<Usuario | null>(null);
   const esAdmin = usuario?.rol === 'admin';
   const mostrarAcciones = esAdmin || usuario?.rol === 'coach';
 
-  const recargar = useCallback(async () => {
-    try {
-      const r = await api('/api/usuarios');
-      setLista(Array.isArray(r) ? (r as Usuario[]) : []);
-      setError(null);
-    } catch (e) { setError(e instanceof Error ? e.message : 'Error cargando usuarios'); }
-  }, []);
+  const usuariosQ = useUsuarios();
+  const coachesQ = useCoaches(esAdmin);
+  const eliminar = useEliminarUsuario();
+  const actualizarCoach = useActualizarCoach();
+
+  const lista = (usuariosQ.data ?? []) as Usuario[];
+  const coaches = esAdmin ? ((coachesQ.data ?? []) as Usuario[]) : [];
+  const error = usuariosQ.isError ? usuariosQ.error.message : null;
 
   const pedirEliminar = (u: Usuario) => setEliminando(u);
 
   const confirmarEliminar = async () => {
     if (!eliminando) return;
     try {
-      await api(`/api/usuarios/${eliminando.id}`, { method: 'DELETE' });
+      await eliminar.mutateAsync(eliminando.id);
       toast?.('Usuario eliminado correctamente');
       setEliminando(null);
-      recargar();
     } catch (e) { toast?.(e instanceof Error ? e.message : 'No se pudo eliminar'); setEliminando(null); }
   };
 
-  useEffect(() => {
-    let activa = true;
-    const refrescarLista = () =>
-      api('/api/usuarios')
-        .then((r) => {
-          if (!activa) return;
-          setLista(Array.isArray(r) ? (r as Usuario[]) : []);
-          setError(null);
-        })
-        .catch((e) => {
-          if (!activa) return;
-          setError(e instanceof Error ? e.message : 'Error cargando usuarios');
-        });
-    refrescarLista();
-    if (esAdmin) {
-      api('/api/usuarios/coaches')
-        .then((r) => { if (activa) setCoaches(Array.isArray(r) ? (r as Usuario[]) : []); })
-        .catch(() => { if (activa) setCoaches([]); });
-    }
-    return () => { activa = false; };
-  }, [esAdmin]);
-
   const asignar = async (id: number, coachId: string) => {
     try {
-      await api(`/api/usuarios/${id}/coach`, {
-        method: 'PUT',
-        body: { coachId: coachId === '' ? null : Number(coachId) },
-      });
+      await actualizarCoach.mutateAsync({ id, coachId: coachId === '' ? null : Number(coachId) });
       toast?.('Coach actualizado');
-      recargar();
     } catch (e) { toast?.(e instanceof Error ? e.message : 'No se pudo asignar'); }
   };
 
@@ -147,12 +118,7 @@ export default function Pacientes({ toast }: { toast?: (msg: string) => void }) 
       )}
 
       {creando && (
-        <FormUsuario
-          esAdmin={esAdmin}
-          toast={toast}
-          onClose={() => setCreando(false)}
-          onCreated={recargar}
-        />
+        <FormUsuario esAdmin={esAdmin} toast={toast} onClose={() => setCreando(false)} />
       )}
 
       {eliminando && (
